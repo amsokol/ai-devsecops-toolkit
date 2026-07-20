@@ -33,10 +33,7 @@ pub use fs_tools::{
 };
 pub use llm::{AssistantTurn, Llm, LlmError, OpenAiCompatibleLlm, RetryingLlm};
 pub use observe::{AgentObserver, NoopObserver, StderrObserver};
-pub use shell_tools::{
-    default_shell_tool_config, register_workspace_shell_tool, DEFAULT_SHELL_ALLOWLIST,
-    DEFAULT_SHELL_MAX_OUTPUT_BYTES, DEFAULT_SHELL_MAX_TIMEOUT_MS, DEFAULT_SHELL_TIMEOUT_MS,
-};
+pub use shell_tools::register_workspace_shell_tool;
 pub use skills::{load_skills, Error as SkillsError};
 pub use tools::{Tool, ToolError, ToolRegistry};
 

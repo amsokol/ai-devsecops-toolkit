@@ -1,0 +1,47 @@
+load("@bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//bazel:buf.bzl", "buf_generate", "buf_lint_test", "buf_module")
+
+# Monorepo codegen entrypoint: all API packages → checked-in rust/api/gen.
+# Package-specific //api/<product>/v1:lint stays product-scoped for a future kit split.
+#
+#   bazel run //api:generate
+#   bazel test //api:lint
+
+filegroup(
+    name = "protos",
+    srcs = [
+        "//api/ai-agent-kit/v1:protos",
+        "//api/depbot/v1:protos",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+buf_module(
+    name = "module",
+    srcs = [":protos"],
+    visibility = ["//visibility:public"],
+)
+
+buf_lint_test(
+    name = "lint",
+    size = "small",
+    module = ":module",
+)
+
+buf_generate(
+    name = "rust",
+    full_tree = True,
+    module = ":module",
+    outdir = "rust/api/gen",
+    tags = ["manual"],
+    template = "//:buf.gen.rust.yaml",
+)
+
+write_source_files(
+    name = "generate",
+    check_that_out_file_exists = False,
+    files = {
+        "//rust/api:gen": ":rust",
+    },
+    tags = ["manual"],
+)

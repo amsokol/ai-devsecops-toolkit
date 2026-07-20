@@ -12,16 +12,6 @@ use api::aiagentkit::v1::{CommandResult, RunCommand, ShellToolConfig, ToolSpec};
 use crate::fs_tools::resolve_under_root;
 use crate::tools::{Tool, ToolError, ToolRegistry};
 
-/// Default allowlist for depbot-oriented CLIs (caller may override via config).
-pub const DEFAULT_SHELL_ALLOWLIST: &[&str] = &[
-    "go", "npm", "npx", "node", "yarn", "pnpm", "git", "gh", "cargo", "rustc", "rg", "bazel",
-];
-
-/// Suggested defaults when the caller builds a [`ShellToolConfig`].
-pub const DEFAULT_SHELL_TIMEOUT_MS: u32 = 60_000;
-pub const DEFAULT_SHELL_MAX_TIMEOUT_MS: u32 = 300_000;
-pub const DEFAULT_SHELL_MAX_OUTPUT_BYTES: u64 = 256 * 1024;
-
 const RUN_COMMAND_PARAMS: &str = r#"{
   "type": "object",
   "properties": {
@@ -47,21 +37,10 @@ const RUN_COMMAND_PARAMS: &str = r#"{
   "additionalProperties": false
 }"#;
 
-/// Build a [`ShellToolConfig`] with workspace root and recommended defaults.
-pub fn default_shell_tool_config(workspace_root: impl Into<String>) -> ShellToolConfig {
-    let mut cfg = ShellToolConfig::default()
-        .with_workspace_root(workspace_root)
-        .with_default_timeout_ms(DEFAULT_SHELL_TIMEOUT_MS)
-        .with_max_timeout_ms(DEFAULT_SHELL_MAX_TIMEOUT_MS)
-        .with_max_output_bytes(DEFAULT_SHELL_MAX_OUTPUT_BYTES);
-    cfg.allowed_programs = DEFAULT_SHELL_ALLOWLIST
-        .iter()
-        .map(|s| (*s).to_owned())
-        .collect();
-    cfg
-}
-
 /// Register sandboxed `run_command` for the given config.
+///
+/// Callers supply [`ShellToolConfig`] fully (including `allowed_programs` and
+/// `curl_url_prefixes`). Empty allowlists deny all matching operations.
 pub fn register_workspace_shell_tool(
     registry: &mut ToolRegistry,
     config: ShellToolConfig,
@@ -74,6 +53,7 @@ pub fn register_workspace_shell_tool(
 struct RunCommandTool {
     workspace_root: PathBuf,
     allowlist: HashSet<String>,
+    curl_url_prefixes: Vec<String>,
     default_timeout_ms: u32,
     max_timeout_ms: u32,
     max_output_bytes: u64,
@@ -148,9 +128,27 @@ impl RunCommandTool {
             allowlist.insert(name.to_ascii_lowercase());
         }
 
+        let mut curl_url_prefixes = Vec::new();
+        for prefix in &config.curl_url_prefixes {
+            let p = prefix.trim();
+            if p.is_empty() {
+                continue;
+            }
+            if !p.starts_with("https://") {
+                return Err(ToolError::Failed {
+                    name: "run_command".into(),
+                    message: format!(
+                        "ShellToolConfig.curl_url_prefixes must start with https://: {p:?}"
+                    ),
+                });
+            }
+            curl_url_prefixes.push(p.to_owned());
+        }
+
         Ok(Self {
             workspace_root,
             allowlist,
+            curl_url_prefixes,
             default_timeout_ms,
             max_timeout_ms,
             max_output_bytes,
@@ -210,13 +208,31 @@ impl Tool for RunCommandTool {
             }
         }
 
-        if program_key == "git" {
-            if let Err(message) = check_git_guardrails(&input.args) {
-                return Err(ToolError::Failed {
-                    name: "run_command".into(),
-                    message,
-                });
-            }
+        if program_key == "git"
+            && let Err(message) = check_git_guardrails(&input.args)
+        {
+            return Err(ToolError::Failed {
+                name: "run_command".into(),
+                message,
+            });
+        }
+
+        if program_key == "curl"
+            && let Err(message) = check_curl_guardrails(&input.args, &self.curl_url_prefixes)
+        {
+            return Err(ToolError::Failed {
+                name: "run_command".into(),
+                message,
+            });
+        }
+
+        if program_key == "buf"
+            && let Err(message) = check_buf_guardrails(&input.args)
+        {
+            return Err(ToolError::Failed {
+                name: "run_command".into(),
+                message,
+            });
         }
 
         let cwd_rel = input
@@ -350,6 +366,47 @@ fn check_git_guardrails(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
+/// Allow `curl` only against configured URL prefixes (https only; empty = deny all).
+fn check_curl_guardrails(args: &[String], allowed_prefixes: &[String]) -> Result<(), String> {
+    let urls: Vec<&str> = args
+        .iter()
+        .map(String::as_str)
+        .filter(|a| a.starts_with("https://") || a.starts_with("http://"))
+        .collect();
+
+    if urls.is_empty() {
+        return Err("curl requires an https URL to an allowlisted dependency registry".into());
+    }
+
+    if allowed_prefixes.is_empty() {
+        return Err("curl is blocked: ShellToolConfig.curl_url_prefixes is empty".into());
+    }
+
+    for url in urls {
+        if url.starts_with("http://") {
+            return Err("curl http:// URLs are blocked; use https://".into());
+        }
+        if !allowed_prefixes.iter().any(|p| url.starts_with(p.as_str())) {
+            return Err(format!(
+                "curl URL is not allowlisted for dependency registries: {url}"
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Block destructive / auth `buf` subcommands; allow registry queries and local generate/lint.
+fn check_buf_guardrails(args: &[String]) -> Result<(), String> {
+    let lower: Vec<String> = args.iter().map(|a| a.to_ascii_lowercase()).collect();
+    let blocked = ["delete", "login", "logout", "push", "undelete", "archive"];
+    for b in blocked {
+        if lower.iter().any(|a| a == b) {
+            return Err(format!("buf `{b}` is blocked by guardrails"));
+        }
+    }
+    Ok(())
+}
+
 fn read_pipe(pipe: Option<impl Read>) -> Vec<u8> {
     let Some(mut pipe) = pipe else {
         return Vec::new();
@@ -408,6 +465,12 @@ mod tests {
         cfg
     }
 
+    fn cfg_with_curl(dir: &Path, allow: &[&str], prefixes: &[&str]) -> ShellToolConfig {
+        let mut cfg = cfg_for(dir, allow);
+        cfg.curl_url_prefixes = prefixes.iter().map(|s| (*s).to_owned()).collect();
+        cfg
+    }
+
     #[test]
     fn rejects_non_allowlisted_program() {
         let dir = tempfile::tempdir().unwrap();
@@ -459,6 +522,71 @@ mod tests {
     }
 
     #[test]
+    fn blocks_curl_to_non_allowlisted_host() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut reg = ToolRegistry::new();
+        register_workspace_shell_tool(
+            &mut reg,
+            cfg_with_curl(dir.path(), &["curl"], &["https://registry.bazel.build/"]),
+        )
+        .unwrap();
+        let err = reg
+            .call(
+                "run_command",
+                r#"{"program":"curl","args":["-fsSL","https://example.com/x"]}"#,
+            )
+            .unwrap_err();
+        assert!(err.to_string().contains("not allowlisted"));
+    }
+
+    #[test]
+    fn blocks_curl_when_prefixes_empty() {
+        let dir = tempfile::tempdir().unwrap();
+        let mut reg = ToolRegistry::new();
+        register_workspace_shell_tool(&mut reg, cfg_for(dir.path(), &["curl"])).unwrap();
+        let err = reg
+            .call(
+                "run_command",
+                r#"{"program":"curl","args":["-fsSL","https://registry.bazel.build/"]}"#,
+            )
+            .unwrap_err();
+        assert!(err.to_string().contains("curl_url_prefixes is empty"));
+    }
+
+    #[test]
+    fn allows_curl_configured_prefix_shape() {
+        let prefixes = vec!["https://registry.bazel.build/".to_owned()];
+        assert!(check_curl_guardrails(
+            &["-fsSL".into(), "https://registry.bazel.build/modules/x".into()],
+            &prefixes,
+        )
+        .is_ok());
+        assert!(check_curl_guardrails(
+            &["https://evil.example/".into()],
+            &prefixes,
+        )
+        .is_err());
+        assert!(check_curl_guardrails(
+            &["https://registry.bazel.build/x".into()],
+            &[],
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn blocks_buf_delete() {
+        assert!(check_buf_guardrails(&["registry".into(), "module".into(), "delete".into()]).is_err());
+        assert!(check_buf_guardrails(&[
+            "registry".into(),
+            "module".into(),
+            "label".into(),
+            "list".into(),
+            "buf.build/bufbuild/protovalidate".into(),
+        ])
+        .is_ok());
+    }
+
+    #[test]
     fn runs_echo_ok() {
         let dir = tempfile::tempdir().unwrap();
         fs::write(dir.path().join("marker.txt"), "x").unwrap();
@@ -504,12 +632,5 @@ mod tests {
                 );
             }
         }
-    }
-
-    #[test]
-    fn default_config_has_allowlist() {
-        let cfg = default_shell_tool_config("/tmp/ws");
-        assert!(!cfg.allowed_programs.is_empty());
-        assert_eq!(cfg.default_timeout_ms, Some(DEFAULT_SHELL_TIMEOUT_MS));
     }
 }

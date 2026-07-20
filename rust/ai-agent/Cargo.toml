@@ -13,4 +13,5 @@ path = "src/main.rs"
 [dependencies]
 ai-agent-kit = { path = "../ai-agent-kit" }
 clap = { workspace = true }
+depbot = { path = "../depbot" }
 tokio = { workspace = true }

@@ -1,10 +1,12 @@
-//! Checked-in Protobuf (buffa) stubs for `aiagentkit.v1`.
+//! Checked-in Protobuf (buffa) stubs for `aiagentkit.v1` and `depbot.v1`.
 //!
 //! Generated hermetically via:
-//!   bazel run //api/ai-agent-kit/v1:generate
+//!   bazel run //api:generate
 //! (Buf CLI + BSR remote `buf.build/anthropics/buffa`).
 //!
-//! Call sites: `api::aiagentkit::v1::{...}`.
+//! Package layout under `api/` is split so `ai-agent-kit` can move to its own
+//! repo without taking `depbot` protos. Call sites:
+//! `api::aiagentkit::v1::{...}`, `api::depbot::v1::{...}`.
 
 #![allow(clippy::all)]
 #![allow(
@@ -14,11 +16,16 @@
     non_camel_case_types
 )]
 
-/// Buffa-generated message types (`crate::buffa::aiagentkit::v1`).
+/// Buffa-generated message types.
 pub mod buffa {
     pub mod aiagentkit {
         pub mod v1 {
             include!("../gen/buffa/aiagentkit.v1.rs");
+        }
+    }
+    pub mod depbot {
+        pub mod v1 {
+            include!("../gen/buffa/depbot.v1.rs");
         }
     }
 }
@@ -31,6 +38,18 @@ pub mod aiagentkit {
         /// Zero-copy message views (`SkillBundleView`, `SkillBundleOwnedView`, …).
         pub mod view {
             pub use crate::buffa::aiagentkit::v1::__buffa::view::*;
+        }
+    }
+}
+
+/// Facade matching the proto package path: `api::depbot::v1`.
+pub mod depbot {
+    pub mod v1 {
+        pub use crate::buffa::depbot::v1::*;
+
+        /// Zero-copy message views.
+        pub mod view {
+            pub use crate::buffa::depbot::v1::__buffa::view::*;
         }
     }
 }

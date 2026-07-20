@@ -2,6 +2,7 @@
 //!
 //! Builds protobuf configs from flags/env, registers workspace FS tools, runs the agent.
 //!
+//! Shell allowlists come from `.depbot/tools.yaml` (`depbot.v1.ToolsFile`: YAML → JSON → proto).
 //! The API key itself is never a CLI flag (Cargo echoes argv). Pass the *name* of an
 //! env var via `--api-key-env-var`.
 //!
@@ -11,18 +12,20 @@
 //!   --api-key-env-var NVIDIA_API_KEY \
 //!   --model z-ai/glm-5.2 \
 //!   --workspace . \
-//!   --message "List files in the repo root"
+//!   --skill depbot \
+//!   --message "Dry-run: list dependency ecosystems"
 //! ```
 
 use std::path::PathBuf;
 use std::process::ExitCode;
 
 use ai_agent_kit::{
-    default_shell_tool_config, register_workspace_fs_tools, register_workspace_shell_tool,
-    run_agent, run_agent_with_observer, OpenAiCompatibleLlm, OpenAiCompatibleLlmConfig,
-    RetryPolicy, RetryingLlm, RunAgent, StderrObserver, ToolRegistry,
+    register_workspace_fs_tools, register_workspace_shell_tool, run_agent,
+    run_agent_with_observer, OpenAiCompatibleLlm, OpenAiCompatibleLlmConfig, RetryPolicy,
+    RetryingLlm, RunAgent, StderrObserver, ToolRegistry,
 };
 use clap::Parser;
+use depbot::{load_tools_file, shell_tool_config_from_tools_file, DEFAULT_TOOLS_CONFIG};
 
 #[derive(Parser)]
 #[command(
@@ -73,6 +76,10 @@ struct Args {
     /// Max retry backoff in milliseconds.
     #[arg(long, default_value_t = 5000, env = "AI_AGENT_RETRY_MAX_BACKOFF_MS")]
     retry_max_backoff_ms: u32,
+
+    /// Path to depbot tools config (YAML → depbot.v1.ToolsFile). Default: `<workspace>/.depbot/tools.yaml`.
+    #[arg(long, env = "AI_AGENT_TOOLS_CONFIG")]
+    tools_config: Option<PathBuf>,
 
     /// Do not register `read_file` / `list_dir` / `write_file`.
     #[arg(long, default_value_t = false)]
@@ -173,7 +180,18 @@ async fn run() -> Result<(), String> {
         register_workspace_fs_tools(&mut tools, &workspace);
     }
     if !args.no_shell_tool {
-        let shell_cfg = default_shell_tool_config(workspace.to_string_lossy());
+        let tools_path = match &args.tools_config {
+            Some(p) => p.clone(),
+            None => workspace.join(DEFAULT_TOOLS_CONFIG),
+        };
+        let tools_file = load_tools_file(&tools_path).map_err(|e| {
+            format!(
+                "tools config {}: {e} (create {DEFAULT_TOOLS_CONFIG} or pass --tools-config)",
+                tools_path.display()
+            )
+        })?;
+        let shell_cfg = shell_tool_config_from_tools_file(&tools_file, workspace.to_string_lossy())
+            .map_err(|e| e.to_string())?;
         register_workspace_shell_tool(&mut tools, shell_cfg).map_err(|e| e.to_string())?;
     }
 

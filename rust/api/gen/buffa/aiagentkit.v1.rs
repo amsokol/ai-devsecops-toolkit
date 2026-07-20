@@ -3472,6 +3472,17 @@ pub struct ShellToolConfig {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub max_output_bytes: ::core::option::Option<u64>,
+    /// Allowed URL prefixes for `curl` (must start with `https://`). Empty = deny all curl URLs.
+    /// Absolute security floor in code still rejects `http://`.
+    ///
+    /// Field 6: `curl_url_prefixes`
+    #[serde(
+        rename = "curlUrlPrefixes",
+        alias = "curl_url_prefixes",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub curl_url_prefixes: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -3484,6 +3495,7 @@ impl ::core::fmt::Debug for ShellToolConfig {
             .field("default_timeout_ms", &self.default_timeout_ms)
             .field("max_timeout_ms", &self.max_timeout_ms)
             .field("max_output_bytes", &self.max_output_bytes)
+            .field("curl_url_prefixes", &self.curl_url_prefixes)
             .finish()
     }
 }
@@ -3560,6 +3572,9 @@ impl ::buffa::Message for ShellToolConfig {
         if let Some(v) = self.max_output_bytes {
             size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
         }
+        for v in &self.curl_url_prefixes {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
         size += self.__buffa_unknown_fields.encoded_len() as u32;
         size
     }
@@ -3584,6 +3599,9 @@ impl ::buffa::Message for ShellToolConfig {
         }
         if let Some(v) = self.max_output_bytes {
             ::buffa::types::put_uint64_field(5u32, v, buf);
+        }
+        for v in &self.curl_url_prefixes {
+            ::buffa::types::put_string_field(6u32, v, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -3644,6 +3662,13 @@ impl ::buffa::Message for ShellToolConfig {
                     ::buffa::types::decode_uint64(buf)?,
                 );
             }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.curl_url_prefixes.push(::buffa::types::decode_string(buf)?);
+            }
             _ => {
                 self.__buffa_unknown_fields
                     .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
@@ -3657,6 +3682,7 @@ impl ::buffa::Message for ShellToolConfig {
         self.default_timeout_ms = ::core::option::Option::None;
         self.max_timeout_ms = ::core::option::Option::None;
         self.max_output_bytes = ::core::option::Option::None;
+        self.curl_url_prefixes.clear();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -10229,6 +10255,11 @@ pub mod __buffa {
             ///
             /// Field 5: `max_output_bytes`
             pub max_output_bytes: ::core::option::Option<u64>,
+            /// Allowed URL prefixes for `curl` (must start with `https://`). Empty = deny all curl URLs.
+            /// Absolute security floor in code still rejects `http://`.
+            ///
+            /// Field 6: `curl_url_prefixes`
+            pub curl_url_prefixes: ::buffa::RepeatedView<'a, &'a str>,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for ShellToolConfigView<'a> {
@@ -10306,6 +10337,14 @@ pub mod __buffa {
                         view.allowed_programs
                             .push(::buffa::types::borrow_str(&mut cur)?);
                     }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.curl_url_prefixes
+                            .push(::buffa::types::borrow_str(&mut cur)?);
+                    }
                     _ => {
                         ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
                         let span_len = before_tag.len() - cur.len();
@@ -10344,6 +10383,11 @@ pub mod __buffa {
                     default_timeout_ms: self.default_timeout_ms,
                     max_timeout_ms: self.max_timeout_ms,
                     max_output_bytes: self.max_output_bytes,
+                    curl_url_prefixes: self
+                        .curl_url_prefixes
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect(),
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -10373,6 +10417,9 @@ pub mod __buffa {
                 if let Some(v) = self.max_output_bytes {
                     size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
                 }
+                for v in &self.curl_url_prefixes {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
                 size += self.__buffa_unknown_fields.encoded_len() as u32;
                 size
             }
@@ -10398,6 +10445,9 @@ pub mod __buffa {
                 }
                 if let Some(v) = self.max_output_bytes {
                     ::buffa::types::put_uint64_field(5u32, v, buf);
+                }
+                for v in &self.curl_url_prefixes {
+                    ::buffa::types::put_string_field(6u32, v, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -10446,6 +10496,9 @@ pub mod __buffa {
                             "maxOutputBytes",
                             &::buffa::json_helpers::ProtoJson(&__v),
                         )?;
+                }
+                if !self.curl_url_prefixes.is_empty() {
+                    __map.serialize_entry("curlUrlPrefixes", &*self.curl_url_prefixes)?;
                 }
                 __map.end()
             }
@@ -10578,6 +10631,14 @@ pub mod __buffa {
             #[must_use]
             pub fn max_output_bytes(&self) -> ::core::option::Option<u64> {
                 self.0.reborrow().max_output_bytes
+            }
+            /// Allowed URL prefixes for `curl` (must start with `https://`). Empty = deny all curl URLs.
+            /// Absolute security floor in code still rejects `http://`.
+            ///
+            /// Field 6: `curl_url_prefixes`
+            #[must_use]
+            pub fn curl_url_prefixes(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().curl_url_prefixes
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<ShellToolConfigView<'static>>>

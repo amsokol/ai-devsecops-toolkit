@@ -29,6 +29,9 @@ message ShellToolConfig {
     (buf.validate.field).required = true,
     (buf.validate.field).uint64.gte = 1
   ];
+  // Allowed URL prefixes for `curl` (must start with `https://`). Empty = deny all curl URLs.
+  // Absolute security floor in code still rejects `http://`.
+  repeated string curl_url_prefixes = 6;
 }
 
 // RunCommand is the input for the `run_command` tool (argv form; no shell).

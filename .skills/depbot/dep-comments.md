@@ -1,0 +1,86 @@
+# Dependency comments (depbot advantage)
+
+Renovate mostly follows version ranges and config DSL. **Depbot must read human comments**
+near dependency declarations and treat them as first-class policy — blockers, unlock
+conditions, hold reasons, and intended target versions.
+
+This is a core product differentiator. Never skip the comment pass.
+
+## Where to look
+
+Before proposing or applying bumps, search and read comments in:
+
+- Manifest lines and the few lines above/below each dependency
+  (`Cargo.toml`, `go.mod`, `package.json`, `MODULE.bazel`, lock-adjacent notes)
+- Nearby `#` / `//` / `/* */` comments and TOML/JSON is awkward — for JSON, check
+  sibling `*.md` / `DEPENDENCIES.md` / `docs/deps*` if present
+- `rg` for: `depbot:`, `pin`, `hold`, `do not bump`, `until`, `when`, `blocked`,
+  `FIXME.*dep`, `TODO.*bump`, package names about to be updated
+
+## Preferred convention (`depbot:` markers)
+
+Teams should leave machine-friendly notes next to pins:
+
+```toml
+# depbot: hold =0.8.1 — bump to =0.9.0 when buffa 0.9 is released with matching
+# BSR plugin and workspace features (std, fast-utf8, json) still work.
+buffa = { version = "=0.8.1", default-features = false, features = ["std", "fast-utf8", "json"] }
+```
+
+```go
+// depbot: do not bump major until go1.23 CI image is rolled out
+require github.com/example/lib v1.2.3
+```
+
+```text
+// depbot: ok to patch/minor; majors only with explicit human approval
+```
+
+Marker grammar (informal, parse with judgment):
+
+| Phrase | Meaning |
+|--------|---------|
+| `hold` / `pin` / `do not bump` | Block automatic bumps unless condition met or user overrides |
+| `bump to X when …` / `until …` | Allowed target + unlock condition |
+| `ok to patch` / `patch only` | Cap at patch (or patch+minor if said) |
+| `security ok` / `security exception` | Security bumps may bypass a soft hold (still report) |
+
+Natural-language comments **without** the `depbot:` prefix still count if they clearly
+refer to that dependency. Prefer adding a `depbot:` marker when you touch the line so
+the next run is unambiguous.
+
+## Workflow integration
+
+1. **Discover** manifests.
+2. **Comment pass** — collect holds / unlock conditions / intended targets per package.
+3. **Scan** outdated versions with ecosystem tools.
+4. **Reconcile**:
+   - If outdated **and** unlock condition is satisfied → candidate to bump (to the
+     commented target when specified, else latest allowed by grouping policy).
+   - If outdated **but** hold/condition unmet → **do not bump**; list it under
+     “blocked by comment” with the quote and what’s still missing.
+   - If a comment names a future version that is **not yet published** → report
+     “waiting on upstream”, do not invent a bump.
+   - If a comment conflicts with the user request (“bump everything”) → ask or
+     follow the user’s explicit override and mention the overridden comment in the PR.
+5. **After a successful unlock bump** — update or remove the `depbot:` comment so it
+   does not stale-block the next run (replace with a short note if a new hold applies).
+
+## Reporting
+
+Always surface comment-driven decisions in plans and PR bodies:
+
+```markdown
+## Dependency comments
+- `buffa` held at `=0.8.1` — unlock: bump to `=0.9.0` when 0.9 is available with matching features
+  (condition unmet / met — …)
+```
+
+If you only do a dry-run, the comment analysis section is still required.
+
+## Anti-patterns
+
+- Ignoring comments because `cargo update` / `npm outdated` looks clean or noisy
+- Bumping past an explicit hold “to help”
+- Leaving obsolete `depbot: hold … bump to 0.9.0` comments after 0.9.0 is already applied
+- Treating unrelated code TODOs as dependency policy

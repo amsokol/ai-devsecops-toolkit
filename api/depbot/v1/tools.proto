@@ -1,0 +1,46 @@
+edition = "2024";
+
+package depbot.v1;
+
+import "buf/validate/validate.proto";
+
+// ToolsFile is the on-disk tools configuration (`.depbot/tools.yaml`).
+// Load path: YAML → JSON → this message (validate shape via protobuf/serde).
+message ToolsFile {
+  // File schema version (currently 1).
+  uint32 version = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Shell / run_command settings.
+  ShellSection shell = 2 [(buf.validate.field).required = true];
+  // Optional curl URL prefix allowlist (used when `curl` is an allowed program).
+  CurlSection curl = 3;
+}
+
+// ShellSection configures argv-only command execution for the workspace agent.
+message ShellSection {
+  // Allowed program basenames (e.g. `git`, `npm`). Empty = deny all programs.
+  repeated string allowed_programs = 1;
+  // Default timeout in milliseconds when the model omits timeout_ms.
+  uint32 default_timeout_ms = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Hard cap for timeouts.
+  uint32 max_timeout_ms = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Max captured stdout+stderr bytes combined.
+  uint64 max_output_bytes = 4 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint64.gte = 1
+  ];
+}
+
+// CurlSection restricts `curl` to dependency-registry URL prefixes.
+message CurlSection {
+  // Allowed URL prefixes (must be `https://…`). Empty = deny all curl URLs.
+  repeated string url_prefixes = 1;
+}

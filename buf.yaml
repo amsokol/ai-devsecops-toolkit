@@ -12,6 +12,8 @@ lint:
   except:
     # Package aiagentkit.v1 lives under api/ai-agent-kit/v1 (product path).
     - PACKAGE_DIRECTORY_MATCH
+    # Package depbot.v1 lives under api/depbot/v1 (product path).
+    # (Same exception covers both; lint rule is module-wide.)
 breaking:
   use:
     - FILE

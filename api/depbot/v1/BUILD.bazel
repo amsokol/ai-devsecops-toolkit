@@ -1,8 +1,8 @@
 load("//bazel:buf.bzl", "buf_lint_test", "buf_module")
 
-# ai-agent-kit API only — no depbot coupling (kit may become its own repo).
+# depbot product API — stays in this toolkit; not part of ai-agent-kit.
 # Monorepo codegen: bazel run //api:generate
-# Kit-only lint:    bazel test //api/ai-agent-kit/v1:lint
+# Depbot-only lint: bazel test //api/depbot/v1:lint
 
 filegroup(
     name = "protos",
