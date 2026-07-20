@@ -54,3 +54,25 @@ message DirListing {
   // Entries sorted by name.
   repeated DirEntry entries = 2;
 }
+
+// WriteFile is the input for the `write_file` tool.
+message WriteFile {
+  // Path relative to the workspace root (no absolute paths, no `..` escape).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // UTF-8 contents to write (overwrites if the file exists).
+  string content = 2 [(buf.validate.field).required = true];
+}
+
+// WriteFileResult is the result of `write_file`.
+message WriteFileResult {
+  // Path that was written (as requested).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Number of UTF-8 bytes written.
+  uint64 bytes_written = 2;
+}

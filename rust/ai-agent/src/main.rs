@@ -70,7 +70,7 @@ struct Args {
     #[arg(long, default_value_t = 5000, env = "AI_AGENT_RETRY_MAX_BACKOFF_MS")]
     retry_max_backoff_ms: u32,
 
-    /// Do not register `read_file` / `list_dir`.
+    /// Do not register `read_file` / `list_dir` / `write_file`.
     #[arg(long, default_value_t = false)]
     no_fs_tools: bool,
 }

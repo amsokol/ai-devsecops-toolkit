@@ -1,17 +1,19 @@
-//! Workspace-sandboxed filesystem tools: `read_file` and `list_dir`.
+//! Workspace-sandboxed filesystem tools: `read_file`, `list_dir`, `write_file`.
 
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::sync::Arc;
 
 use api::aiagentkit::v1::{
-    DirEntry, DirListing, FileContent, ListDir, ReadFile, ToolSpec,
+    DirEntry, DirListing, FileContent, ListDir, ReadFile, ToolSpec, WriteFile, WriteFileResult,
 };
 
 use crate::tools::{Tool, ToolError, ToolRegistry};
 
-/// Max bytes for [`read_file`] (256 KiB).
+/// Max bytes for [`read_file`] / [`write_file`] (256 KiB).
 pub const MAX_READ_FILE_BYTES: u64 = 256 * 1024;
+/// Same limit as [`MAX_READ_FILE_BYTES`].
+pub const MAX_WRITE_FILE_BYTES: u64 = MAX_READ_FILE_BYTES;
 
 const READ_FILE_PARAMS: &str = r#"{
   "type": "object",
@@ -37,7 +39,23 @@ const LIST_DIR_PARAMS: &str = r#"{
   "additionalProperties": false
 }"#;
 
-/// Register sandboxed `read_file` and `list_dir` for `workspace_root`.
+const WRITE_FILE_PARAMS: &str = r#"{
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string",
+      "description": "Path relative to the workspace root"
+    },
+    "content": {
+      "type": "string",
+      "description": "UTF-8 file contents to write (overwrites if present)"
+    }
+  },
+  "required": ["path", "content"],
+  "additionalProperties": false
+}"#;
+
+/// Register sandboxed `read_file`, `list_dir`, and `write_file` for `workspace_root`.
 pub fn register_workspace_fs_tools(
     registry: &mut ToolRegistry,
     workspace_root: impl Into<PathBuf>,
@@ -47,6 +65,9 @@ pub fn register_workspace_fs_tools(
         workspace_root: Arc::clone(&root),
     });
     registry.register(ListDirTool {
+        workspace_root: Arc::clone(&root),
+    });
+    registry.register(WriteFileTool {
         workspace_root: root,
     });
 }
@@ -196,10 +217,89 @@ impl Tool for ListDirTool {
     }
 }
 
+struct WriteFileTool {
+    workspace_root: Arc<PathBuf>,
+}
+
+impl Tool for WriteFileTool {
+    fn spec(&self) -> ToolSpec {
+        ToolSpec::default()
+            .with_name("write_file")
+            .with_description(
+                "Write a UTF-8 text file under the workspace (creates parent dirs). Path must be relative; max 256KiB.",
+            )
+            .with_parameters_json(WRITE_FILE_PARAMS)
+    }
+
+    fn call(&self, arguments_json: &str) -> Result<String, ToolError> {
+        let input: WriteFile = serde_json::from_str(arguments_json).map_err(|e| ToolError::Failed {
+            name: "write_file".into(),
+            message: format!("invalid arguments: {e}"),
+        })?;
+        let req_path = input.path.as_deref().unwrap_or("").trim();
+        if req_path.is_empty() {
+            return Err(ToolError::Failed {
+                name: "write_file".into(),
+                message: "path is required".into(),
+            });
+        }
+        let content = input.content.as_deref().unwrap_or("");
+        let bytes = content.len() as u64;
+        if bytes > MAX_WRITE_FILE_BYTES {
+            return Err(ToolError::Failed {
+                name: "write_file".into(),
+                message: format!(
+                    "content exceeds max size ({MAX_WRITE_FILE_BYTES} bytes): {bytes} bytes"
+                ),
+            });
+        }
+
+        let abs = resolve_under_root(&self.workspace_root, req_path).map_err(|message| {
+            ToolError::Failed {
+                name: "write_file".into(),
+                message,
+            }
+        })?;
+
+        if abs.exists() {
+            let meta = fs::metadata(&abs).map_err(|e| ToolError::Failed {
+                name: "write_file".into(),
+                message: format!("stat {req_path}: {e}"),
+            })?;
+            if meta.is_dir() {
+                return Err(ToolError::Failed {
+                    name: "write_file".into(),
+                    message: format!("{req_path} is a directory"),
+                });
+            }
+        }
+
+        if let Some(parent) = abs.parent() {
+            fs::create_dir_all(parent).map_err(|e| ToolError::Failed {
+                name: "write_file".into(),
+                message: format!("create parent dirs for {req_path}: {e}"),
+            })?;
+        }
+
+        fs::write(&abs, content).map_err(|e| ToolError::Failed {
+            name: "write_file".into(),
+            message: format!("write {req_path}: {e}"),
+        })?;
+
+        let out = WriteFileResult::default()
+            .with_path(req_path.to_owned())
+            .with_bytes_written(bytes);
+        serde_json::to_string(&out).map_err(|e| ToolError::Failed {
+            name: "write_file".into(),
+            message: format!("serialize result: {e}"),
+        })
+    }
+}
+
 /// Resolve `rel` under `workspace_root`, rejecting absolute paths, `..`, and symlink escapes.
 ///
-/// Works on Windows and Unix: containment checks normalize verbatim (`\\?\`) prefixes
-/// so `canonicalize` results compare correctly.
+/// Existing path components are canonicalized as we walk so symlink escapes are detected
+/// before read/write. Works on Windows and Unix (verbatim `\\?\` prefixes normalized).
 fn resolve_under_root(workspace_root: &Path, rel: &str) -> Result<PathBuf, String> {
     let rel_path = Path::new(rel);
     if rel_path.is_absolute() {
@@ -214,7 +314,20 @@ fn resolve_under_root(workspace_root: &Path, rel: &str) -> Result<PathBuf, Strin
     for component in rel_path.components() {
         match component {
             Component::CurDir => {}
-            Component::Normal(part) => resolved.push(part),
+            Component::Normal(part) => {
+                resolved.push(part);
+                if resolved.exists() {
+                    let canon = resolved
+                        .canonicalize()
+                        .map_err(|e| format!("canonicalize path: {e}"))?;
+                    if !path_is_within(&canon, &root) {
+                        return Err("path escapes the workspace root".into());
+                    }
+                    resolved = canon;
+                } else if !path_is_within(&resolved, &root) {
+                    return Err("path escapes the workspace root".into());
+                }
+            }
             Component::ParentDir => {
                 return Err("path must not contain '..'".into());
             }
@@ -224,19 +337,6 @@ fn resolve_under_root(workspace_root: &Path, rel: &str) -> Result<PathBuf, Strin
         }
     }
 
-    if resolved.exists() {
-        let canon = resolved
-            .canonicalize()
-            .map_err(|e| format!("canonicalize path: {e}"))?;
-        if !path_is_within(&canon, &root) {
-            return Err("path escapes the workspace root".into());
-        }
-        return Ok(canon);
-    }
-
-    if !path_is_within(&resolved, &root) {
-        return Err("path escapes the workspace root".into());
-    }
     Ok(resolved)
 }
 
@@ -307,6 +407,35 @@ mod tests {
     }
 
     #[test]
+    fn write_file_creates_nested() {
+        let dir = tempfile::tempdir().unwrap();
+        let reg = registry_in(dir.path());
+        let out = reg
+            .call(
+                "write_file",
+                r#"{"path":"out/notes.txt","content":"hello\n"}"#,
+            )
+            .unwrap();
+        let parsed: WriteFileResult = serde_json::from_str(&out).unwrap();
+        assert_eq!(parsed.path.as_deref(), Some("out/notes.txt"));
+        assert_eq!(parsed.bytes_written, Some(6));
+        assert_eq!(
+            fs::read_to_string(dir.path().join("out/notes.txt")).unwrap(),
+            "hello\n"
+        );
+    }
+
+    #[test]
+    fn write_file_oversize_errors() {
+        let dir = tempfile::tempdir().unwrap();
+        let reg = registry_in(dir.path());
+        let big = "x".repeat((MAX_WRITE_FILE_BYTES as usize) + 1);
+        let args = serde_json::json!({ "path": "big.txt", "content": big }).to_string();
+        let err = reg.call("write_file", &args).unwrap_err();
+        assert!(err.to_string().contains("max size"), "{err}");
+    }
+
+    #[test]
     fn rejects_parent_escape() {
         let dir = tempfile::tempdir().unwrap();
         let reg = registry_in(dir.path());
@@ -322,7 +451,6 @@ mod tests {
         let reg = registry_in(dir.path());
         let abs = dir.path().join("hello.txt");
         fs::write(&abs, "x").unwrap();
-        // JSON-escape so Windows `\` paths are valid.
         let args = serde_json::json!({ "path": abs.to_string_lossy() }).to_string();
         let err = reg.call("read_file", &args).unwrap_err();
         assert!(err.to_string().contains("relative"), "{err}");
