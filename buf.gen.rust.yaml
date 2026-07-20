@@ -1,0 +1,9 @@
+version: v2
+plugins:
+  # Message types (BSR). Pin matches workspace buffa =0.8.1 (latest BSR plugin).
+  - remote: buf.build/anthropics/buffa:v0.8.1
+    out: rust/api/gen/buffa
+    opt:
+      - file_per_package=true
+      - json=true
+      - views=true

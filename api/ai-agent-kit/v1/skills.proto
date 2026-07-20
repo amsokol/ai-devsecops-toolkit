@@ -1,0 +1,55 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// LoadSkills is the input for [`load_skills`].
+message LoadSkills {
+  // Workspace / repository root that contains `.skills/`.
+  string workspace_root = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Skill id under `.skills/<skill_id>/`.
+  string skill_id = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string = {
+      min_len: 1,
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+    }
+  ];
+}
+
+// SkillFile is one markdown file from `.skills/<skill_id>/`.
+message SkillFile {
+  // File name relative to the skill directory (e.g. "SKILL.md").
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string = {
+      min_len: 1,
+      suffix: ".md",
+    }
+  ];
+  // Full file contents.
+  string content = 2 [(buf.validate.field).required = true];
+}
+
+// SkillBundle is the loaded skill directory for an agent.
+message SkillBundle {
+  // Skill identifier (directory name under `.skills/`, e.g. "depbot").
+  string skill_id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string = {
+      min_len: 1,
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+    }
+  ];
+  // Absolute path to the skill directory.
+  string root_path = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Markdown files found in the skill directory (sorted by name).
+  repeated SkillFile files = 3;
+}

@@ -1,0 +1,18 @@
+[package]
+name = "ai-agent-kit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "AI agent runtime kit (skills, tools, loop) — Phase 1: load_skills"
+
+[lib]
+path = "src/lib.rs"
+name = "ai_agent_kit"
+
+[dependencies]
+api = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

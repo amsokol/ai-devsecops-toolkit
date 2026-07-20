@@ -1,0 +1,17 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+modules:
+  - path: .
+    includes:
+      - api
+deps:
+  - buf.build/bufbuild/protovalidate:v1.2.2
+lint:
+  use:
+    - STANDARD
+  except:
+    # Package aiagentkit.v1 lives under api/ai-agent-kit/v1 (product path).
+    - PACKAGE_DIRECTORY_MATCH
+breaking:
+  use:
+    - FILE

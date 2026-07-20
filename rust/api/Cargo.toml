@@ -1,0 +1,14 @@
+[package]
+name = "api"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Generated buffa stubs for aiagentkit.v1 (buf + BSR anthropics/buffa)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+buffa = { workspace = true }
+serde = { workspace = true }

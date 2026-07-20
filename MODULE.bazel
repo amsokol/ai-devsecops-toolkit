@@ -1,0 +1,22 @@
+"""
+Root Bazel module: Rust + hermetic buf codegen (BSR remotes).
+"""
+
+module(
+    name = "ai_devsecops_toolkit",
+    version = "0.1.0",
+)
+
+bazel_dep(name = "bazel_lib", version = "3.5.0")
+bazel_dep(name = "rules_buf", version = "0.5.4")
+bazel_dep(name = "rules_rust", version = "0.71.3")
+
+# Prebuilt Buf CLI. Codegen plugins are BSR remotes in buf.gen.*.yaml.
+buf = use_extension("@rules_buf//buf:extensions.bzl", "buf")
+buf.toolchains(
+    version = "v1.72.0",
+    sha256 = "c6ddd4f90a2829ea04efbfbbbc44f8f5d4a0f2dda3bec5ec3fbb652c2d394c06",
+)
+use_repo(buf, "rules_buf_toolchains")
+
+include("//:rust.MODULE.bazel")

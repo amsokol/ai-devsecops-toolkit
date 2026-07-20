@@ -1,0 +1,7 @@
+exports_files([
+    "buf.yaml",
+    "buf.lock",
+    "buf.gen.rust.yaml",
+    "Cargo.toml",
+    "Cargo.lock",
+])

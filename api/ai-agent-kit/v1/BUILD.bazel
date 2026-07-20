@@ -1,0 +1,42 @@
+load("@bazel_lib//lib:write_source_files.bzl", "write_source_files")
+load("//bazel:buf.bzl", "buf_generate", "buf_lint_test", "buf_module")
+
+filegroup(
+    name = "protos",
+    srcs = glob(["*.proto"]),
+    visibility = ["//visibility:public"],
+)
+
+# Staged buf module shared by generate and lint.
+buf_module(
+    name = "module",
+    srcs = [":protos"],
+    visibility = ["//visibility:public"],
+)
+
+buf_lint_test(
+    name = "lint",
+    size = "small",
+    module = ":module",
+)
+
+buf_generate(
+    name = "rust",
+    full_tree = True,
+    module = ":module",
+    outdir = "rust/api/gen",
+    tags = ["manual"],
+    template = "//:buf.gen.rust.yaml",
+)
+
+# Checked-in stubs; keep out of //... so BSR remotes are not hit every build.
+#   bazel run //api/ai-agent-kit/v1:generate
+#   bazel test //api/ai-agent-kit/v1:generate_tests
+write_source_files(
+    name = "generate",
+    check_that_out_file_exists = False,
+    files = {
+        "//rust/api:gen": ":rust",
+    },
+    tags = ["manual"],
+)

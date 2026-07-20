@@ -1,0 +1,1 @@
+# Package for //bazel:buf.bzl (buf_generate / buf_lint_test / buf_module).
