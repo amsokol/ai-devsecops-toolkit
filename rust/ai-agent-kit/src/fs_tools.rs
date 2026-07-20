@@ -300,7 +300,7 @@ impl Tool for WriteFileTool {
 ///
 /// Existing path components are canonicalized as we walk so symlink escapes are detected
 /// before read/write. Works on Windows and Unix (verbatim `\\?\` prefixes normalized).
-fn resolve_under_root(workspace_root: &Path, rel: &str) -> Result<PathBuf, String> {
+pub(crate) fn resolve_under_root(workspace_root: &Path, rel: &str) -> Result<PathBuf, String> {
     let rel_path = Path::new(rel);
     if rel_path.is_absolute() {
         return Err("path must be relative to the workspace root".into());

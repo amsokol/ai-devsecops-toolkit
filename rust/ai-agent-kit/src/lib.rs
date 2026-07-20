@@ -23,6 +23,7 @@ mod agent;
 mod fs_tools;
 mod llm;
 mod observe;
+mod shell_tools;
 mod skills;
 mod tools;
 
@@ -32,23 +33,30 @@ pub use fs_tools::{
 };
 pub use llm::{AssistantTurn, Llm, LlmError, OpenAiCompatibleLlm, RetryingLlm};
 pub use observe::{AgentObserver, NoopObserver, StderrObserver};
+pub use shell_tools::{
+    default_shell_tool_config, register_workspace_shell_tool, DEFAULT_SHELL_ALLOWLIST,
+    DEFAULT_SHELL_MAX_OUTPUT_BYTES, DEFAULT_SHELL_MAX_TIMEOUT_MS, DEFAULT_SHELL_TIMEOUT_MS,
+};
 pub use skills::{load_skills, Error as SkillsError};
 pub use tools::{Tool, ToolError, ToolRegistry};
 
 pub use api::aiagentkit::v1::{
-    AgentLlmStep, AgentToolCall, AgentToolResult, AgentTurn, DirEntry, DirListing, FileContent,
-    ListDir, LoadSkills, Message, OpenAiCompatibleLlmConfig, ReadFile, RetryPolicy, Role, RunAgent,
-    SkillBundle, SkillFile, ToolCall, ToolSpec, WriteFile, WriteFileResult,
+    AgentLlmStep, AgentToolCall, AgentToolResult, AgentTurn, CommandResult, DirEntry, DirListing,
+    FileContent, ListDir, LoadSkills, Message, OpenAiCompatibleLlmConfig, ReadFile, RetryPolicy,
+    Role, RunAgent, RunCommand, ShellToolConfig, SkillBundle, SkillFile, ToolCall, ToolSpec,
+    WriteFile, WriteFileResult,
 };
 /// Zero-copy buffa views (for decode-from-bytes paths).
 pub use api::aiagentkit::v1::view::{
     AgentLlmStepOwnedView, AgentLlmStepView, AgentToolCallOwnedView, AgentToolCallView,
     AgentToolResultOwnedView, AgentToolResultView, AgentTurnOwnedView, AgentTurnView,
-    DirEntryOwnedView, DirEntryView, DirListingOwnedView, DirListingView, FileContentOwnedView,
-    FileContentView, ListDirOwnedView, ListDirView, LoadSkillsOwnedView, LoadSkillsView,
-    MessageOwnedView, MessageView, OpenAiCompatibleLlmConfigOwnedView,
-    OpenAiCompatibleLlmConfigView, ReadFileOwnedView, ReadFileView, RetryPolicyOwnedView,
-    RetryPolicyView, RunAgentOwnedView, RunAgentView, SkillBundleOwnedView, SkillBundleView,
-    SkillFileOwnedView, SkillFileView, ToolCallOwnedView, ToolCallView, ToolSpecOwnedView,
-    ToolSpecView, WriteFileOwnedView, WriteFileResultOwnedView, WriteFileResultView, WriteFileView,
+    CommandResultOwnedView, CommandResultView, DirEntryOwnedView, DirEntryView, DirListingOwnedView,
+    DirListingView, FileContentOwnedView, FileContentView, ListDirOwnedView, ListDirView,
+    LoadSkillsOwnedView, LoadSkillsView, MessageOwnedView, MessageView,
+    OpenAiCompatibleLlmConfigOwnedView, OpenAiCompatibleLlmConfigView, ReadFileOwnedView,
+    ReadFileView, RetryPolicyOwnedView, RetryPolicyView, RunAgentOwnedView, RunAgentView,
+    RunCommandOwnedView, RunCommandView, ShellToolConfigOwnedView, ShellToolConfigView,
+    SkillBundleOwnedView, SkillBundleView, SkillFileOwnedView, SkillFileView, ToolCallOwnedView,
+    ToolCallView, ToolSpecOwnedView, ToolSpecView, WriteFileOwnedView, WriteFileResultOwnedView,
+    WriteFileResultView, WriteFileView,
 };

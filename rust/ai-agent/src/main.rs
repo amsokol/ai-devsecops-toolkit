@@ -18,8 +18,9 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 
 use ai_agent_kit::{
-    register_workspace_fs_tools, run_agent, run_agent_with_observer, OpenAiCompatibleLlm,
-    OpenAiCompatibleLlmConfig, RetryPolicy, RetryingLlm, RunAgent, StderrObserver, ToolRegistry,
+    default_shell_tool_config, register_workspace_fs_tools, register_workspace_shell_tool,
+    run_agent, run_agent_with_observer, OpenAiCompatibleLlm, OpenAiCompatibleLlmConfig,
+    RetryPolicy, RetryingLlm, RunAgent, StderrObserver, ToolRegistry,
 };
 use clap::Parser;
 
@@ -76,6 +77,10 @@ struct Args {
     /// Do not register `read_file` / `list_dir` / `write_file`.
     #[arg(long, default_value_t = false)]
     no_fs_tools: bool,
+
+    /// Do not register `run_command`.
+    #[arg(long, default_value_t = false)]
+    no_shell_tool: bool,
 
     /// Log LLM steps and tool calls/results to stderr (truncated).
     #[arg(long, short = 'v', default_value_t = false, env = "AI_AGENT_VERBOSE")]
@@ -166,6 +171,10 @@ async fn run() -> Result<(), String> {
     let mut tools = ToolRegistry::new();
     if !args.no_fs_tools {
         register_workspace_fs_tools(&mut tools, &workspace);
+    }
+    if !args.no_shell_tool {
+        let shell_cfg = default_shell_tool_config(workspace.to_string_lossy());
+        register_workspace_shell_tool(&mut tools, shell_cfg).map_err(|e| e.to_string())?;
     }
 
     let mut params = RunAgent::default()

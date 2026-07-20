@@ -3417,6 +3417,871 @@ pub const __RETRY_POLICY_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buff
     from_json: ::buffa::type_registry::any_from_json::<RetryPolicy>,
     is_wkt: false,
 };
+/// ShellToolConfig configures the workspace `run_command` tool (caller-supplied; no kit defaults).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct ShellToolConfig {
+    /// Workspace root; process cwd is resolved under this path.
+    ///
+    /// Field 1: `workspace_root`
+    #[serde(
+        rename = "workspaceRoot",
+        alias = "workspace_root",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub workspace_root: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Allowed program basenames only (e.g. `go`, `git`). Empty = deny all.
+    /// Absolute paths and path separators in `RunCommand.program` are rejected.
+    ///
+    /// Field 2: `allowed_programs`
+    #[serde(
+        rename = "allowedPrograms",
+        alias = "allowed_programs",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub allowed_programs: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+    ///
+    /// Field 3: `default_timeout_ms`
+    #[serde(
+        rename = "defaultTimeoutMs",
+        alias = "default_timeout_ms",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub default_timeout_ms: ::core::option::Option<u32>,
+    /// Hard cap for timeouts (must be \>= 1).
+    ///
+    /// Field 4: `max_timeout_ms`
+    #[serde(
+        rename = "maxTimeoutMs",
+        alias = "max_timeout_ms",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub max_timeout_ms: ::core::option::Option<u32>,
+    /// Max captured stdout+stderr bytes combined (must be \>= 1).
+    ///
+    /// Field 5: `max_output_bytes`
+    #[serde(
+        rename = "maxOutputBytes",
+        alias = "max_output_bytes",
+        with = "::buffa::json_helpers::opt_uint64",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub max_output_bytes: ::core::option::Option<u64>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for ShellToolConfig {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("ShellToolConfig")
+            .field("workspace_root", &self.workspace_root)
+            .field("allowed_programs", &self.allowed_programs)
+            .field("default_timeout_ms", &self.default_timeout_ms)
+            .field("max_timeout_ms", &self.max_timeout_ms)
+            .field("max_output_bytes", &self.max_output_bytes)
+            .finish()
+    }
+}
+impl ShellToolConfig {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.ShellToolConfig";
+}
+impl ShellToolConfig {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::workspace_root`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_workspace_root(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.workspace_root = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::default_timeout_ms`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_default_timeout_ms(mut self, value: u32) -> Self {
+        self.default_timeout_ms = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::max_timeout_ms`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_max_timeout_ms(mut self, value: u32) -> Self {
+        self.max_timeout_ms = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::max_output_bytes`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_max_output_bytes(mut self, value: u64) -> Self {
+        self.max_output_bytes = Some(value);
+        self
+    }
+}
+::buffa::impl_default_instance!(ShellToolConfig);
+impl ::buffa::MessageName for ShellToolConfig {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "ShellToolConfig";
+    const FULL_NAME: &'static str = "aiagentkit.v1.ShellToolConfig";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.ShellToolConfig";
+}
+impl ::buffa::Message for ShellToolConfig {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(ref v) = self.workspace_root {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        for v in &self.allowed_programs {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(v) = self.default_timeout_ms {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(v) = self.max_timeout_ms {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(v) = self.max_output_bytes {
+            size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(ref v) = self.workspace_root {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        for v in &self.allowed_programs {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(v) = self.default_timeout_ms {
+            ::buffa::types::put_uint32_field(3u32, v, buf);
+        }
+        if let Some(v) = self.max_timeout_ms {
+            ::buffa::types::put_uint32_field(4u32, v, buf);
+        }
+        if let Some(v) = self.max_output_bytes {
+            ::buffa::types::put_uint64_field(5u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .workspace_root
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.allowed_programs.push(::buffa::types::decode_string(buf)?);
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.default_timeout_ms = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.max_timeout_ms = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.max_output_bytes = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.workspace_root = ::core::option::Option::None;
+        self.allowed_programs.clear();
+        self.default_timeout_ms = ::core::option::Option::None;
+        self.max_timeout_ms = ::core::option::Option::None;
+        self.max_output_bytes = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for ShellToolConfig {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.ShellToolConfig";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for ShellToolConfig {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __SHELL_TOOL_CONFIG_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.ShellToolConfig",
+    to_json: ::buffa::type_registry::any_to_json::<ShellToolConfig>,
+    from_json: ::buffa::type_registry::any_from_json::<ShellToolConfig>,
+    is_wkt: false,
+};
+/// RunCommand is the input for the `run_command` tool (argv form; no shell).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct RunCommand {
+    /// Program basename only (must be on the allowlist); resolved via PATH.
+    ///
+    /// Field 1: `program`
+    #[serde(rename = "program", skip_serializing_if = "::core::option::Option::is_none")]
+    pub program: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Arguments passed to the program (not interpreted by a shell).
+    ///
+    /// Field 2: `args`
+    #[serde(
+        rename = "args",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_empty_vec",
+        deserialize_with = "::buffa::json_helpers::null_as_default"
+    )]
+    pub args: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
+    /// Working directory relative to the workspace root (`"."` = workspace root).
+    ///
+    /// Field 3: `cwd`
+    #[serde(rename = "cwd", skip_serializing_if = "::core::option::Option::is_none")]
+    pub cwd: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+    ///
+    /// Field 4: `timeout_ms`
+    #[serde(
+        rename = "timeoutMs",
+        alias = "timeout_ms",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub timeout_ms: ::core::option::Option<u32>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for RunCommand {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("RunCommand")
+            .field("program", &self.program)
+            .field("args", &self.args)
+            .field("cwd", &self.cwd)
+            .field("timeout_ms", &self.timeout_ms)
+            .finish()
+    }
+}
+impl RunCommand {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.RunCommand";
+}
+impl RunCommand {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::program`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_program(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.program = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::cwd`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_cwd(mut self, value: impl Into<::buffa::alloc::string::String>) -> Self {
+        self.cwd = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::timeout_ms`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_timeout_ms(mut self, value: u32) -> Self {
+        self.timeout_ms = Some(value);
+        self
+    }
+}
+::buffa::impl_default_instance!(RunCommand);
+impl ::buffa::MessageName for RunCommand {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "RunCommand";
+    const FULL_NAME: &'static str = "aiagentkit.v1.RunCommand";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.RunCommand";
+}
+impl ::buffa::Message for RunCommand {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(ref v) = self.program {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        for v in &self.args {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.cwd {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(v) = self.timeout_ms {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(ref v) = self.program {
+            ::buffa::types::put_string_field(1u32, v, buf);
+        }
+        for v in &self.args {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.cwd {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let Some(v) = self.timeout_ms {
+            ::buffa::types::put_uint32_field(4u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.program.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                self.args.push(::buffa::types::decode_string(buf)?);
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.cwd.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.timeout_ms = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.program = ::core::option::Option::None;
+        self.args.clear();
+        self.cwd = ::core::option::Option::None;
+        self.timeout_ms = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for RunCommand {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.RunCommand";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for RunCommand {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __RUN_COMMAND_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.RunCommand",
+    to_json: ::buffa::type_registry::any_to_json::<RunCommand>,
+    from_json: ::buffa::type_registry::any_from_json::<RunCommand>,
+    is_wkt: false,
+};
+/// CommandResult is the result of `run_command`.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct CommandResult {
+    /// Process exit code when it exited; unset/zero when timed out before exit.
+    ///
+    /// Field 1: `exit_code`
+    #[serde(
+        rename = "exitCode",
+        alias = "exit_code",
+        with = "::buffa::json_helpers::opt_int32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub exit_code: ::core::option::Option<i32>,
+    /// Captured stdout (may be truncated).
+    ///
+    /// Field 2: `stdout`
+    #[serde(rename = "stdout", skip_serializing_if = "::core::option::Option::is_none")]
+    pub stdout: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Captured stderr (may be truncated).
+    ///
+    /// Field 3: `stderr`
+    #[serde(rename = "stderr", skip_serializing_if = "::core::option::Option::is_none")]
+    pub stderr: ::core::option::Option<::buffa::alloc::string::String>,
+    /// True if the process was killed due to timeout.
+    ///
+    /// Field 4: `timed_out`
+    #[serde(
+        rename = "timedOut",
+        alias = "timed_out",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub timed_out: ::core::option::Option<bool>,
+    /// True if stdout and/or stderr were truncated to the configured byte limit.
+    ///
+    /// Field 5: `truncated`
+    #[serde(
+        rename = "truncated",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub truncated: ::core::option::Option<bool>,
+    /// Wall time spent waiting for the process, in milliseconds.
+    ///
+    /// Field 6: `duration_ms`
+    #[serde(
+        rename = "durationMs",
+        alias = "duration_ms",
+        with = "::buffa::json_helpers::opt_uint64",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub duration_ms: ::core::option::Option<u64>,
+    /// Program basename that was executed.
+    ///
+    /// Field 7: `program`
+    #[serde(rename = "program", skip_serializing_if = "::core::option::Option::is_none")]
+    pub program: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Resolved working directory as requested (relative).
+    ///
+    /// Field 8: `cwd`
+    #[serde(rename = "cwd", skip_serializing_if = "::core::option::Option::is_none")]
+    pub cwd: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for CommandResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("CommandResult")
+            .field("exit_code", &self.exit_code)
+            .field("stdout", &self.stdout)
+            .field("stderr", &self.stderr)
+            .field("timed_out", &self.timed_out)
+            .field("truncated", &self.truncated)
+            .field("duration_ms", &self.duration_ms)
+            .field("program", &self.program)
+            .field("cwd", &self.cwd)
+            .finish()
+    }
+}
+impl CommandResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.CommandResult";
+}
+impl CommandResult {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::exit_code`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_exit_code(mut self, value: i32) -> Self {
+        self.exit_code = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::stdout`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_stdout(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.stdout = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::stderr`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_stderr(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.stderr = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::timed_out`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_timed_out(mut self, value: bool) -> Self {
+        self.timed_out = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::truncated`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_truncated(mut self, value: bool) -> Self {
+        self.truncated = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::duration_ms`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_duration_ms(mut self, value: u64) -> Self {
+        self.duration_ms = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::program`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_program(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.program = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::cwd`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_cwd(mut self, value: impl Into<::buffa::alloc::string::String>) -> Self {
+        self.cwd = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(CommandResult);
+impl ::buffa::MessageName for CommandResult {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "CommandResult";
+    const FULL_NAME: &'static str = "aiagentkit.v1.CommandResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.CommandResult";
+}
+impl ::buffa::Message for CommandResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(v) = self.exit_code {
+            size += 1u32 + ::buffa::types::int32_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.stdout {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.stderr {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if self.timed_out.is_some() {
+            size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+        }
+        if self.truncated.is_some() {
+            size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+        }
+        if let Some(v) = self.duration_ms {
+            size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.program {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.cwd {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.exit_code {
+            ::buffa::types::put_int32_field(1u32, v, buf);
+        }
+        if let Some(ref v) = self.stdout {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.stderr {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let Some(v) = self.timed_out {
+            ::buffa::types::put_bool_field(4u32, v, buf);
+        }
+        if let Some(v) = self.truncated {
+            ::buffa::types::put_bool_field(5u32, v, buf);
+        }
+        if let Some(v) = self.duration_ms {
+            ::buffa::types::put_uint64_field(6u32, v, buf);
+        }
+        if let Some(ref v) = self.program {
+            ::buffa::types::put_string_field(7u32, v, buf);
+        }
+        if let Some(ref v) = self.cwd {
+            ::buffa::types::put_string_field(8u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.exit_code = ::core::option::Option::Some(
+                    ::buffa::types::decode_int32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.stdout.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.stderr.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.timed_out = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.truncated = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            6u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.duration_ms = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint64(buf)?,
+                );
+            }
+            7u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.program.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            8u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.cwd.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.exit_code = ::core::option::Option::None;
+        self.stdout = ::core::option::Option::None;
+        self.stderr = ::core::option::Option::None;
+        self.timed_out = ::core::option::Option::None;
+        self.truncated = ::core::option::Option::None;
+        self.duration_ms = ::core::option::Option::None;
+        self.program = ::core::option::Option::None;
+        self.cwd = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for CommandResult {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.CommandResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for CommandResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __COMMAND_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.CommandResult",
+    to_json: ::buffa::type_registry::any_to_json::<CommandResult>,
+    from_json: ::buffa::type_registry::any_from_json::<CommandResult>,
+    is_wkt: false,
+};
 /// LoadSkills is the input for \[`load_skills`\].
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
@@ -9340,6 +10205,1226 @@ pub mod __buffa {
                 ::serde::Serialize::serialize(&self.0, __s)
             }
         }
+        /// ShellToolConfig configures the workspace `run_command` tool (caller-supplied; no kit defaults).
+        #[derive(Clone, Debug, Default)]
+        pub struct ShellToolConfigView<'a> {
+            /// Workspace root; process cwd is resolved under this path.
+            ///
+            /// Field 1: `workspace_root`
+            pub workspace_root: ::core::option::Option<&'a str>,
+            /// Allowed program basenames only (e.g. `go`, `git`). Empty = deny all.
+            /// Absolute paths and path separators in `RunCommand.program` are rejected.
+            ///
+            /// Field 2: `allowed_programs`
+            pub allowed_programs: ::buffa::RepeatedView<'a, &'a str>,
+            /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+            ///
+            /// Field 3: `default_timeout_ms`
+            pub default_timeout_ms: ::core::option::Option<u32>,
+            /// Hard cap for timeouts (must be \>= 1).
+            ///
+            /// Field 4: `max_timeout_ms`
+            pub max_timeout_ms: ::core::option::Option<u32>,
+            /// Max captured stdout+stderr bytes combined (must be \>= 1).
+            ///
+            /// Field 5: `max_output_bytes`
+            pub max_output_bytes: ::core::option::Option<u64>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for ShellToolConfigView<'a> {
+            type Owned = super::super::ShellToolConfig;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.workspace_root = Some(
+                            ::buffa::types::borrow_str(&mut cur)?,
+                        );
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.default_timeout_ms = Some(
+                            ::buffa::types::decode_uint32(&mut cur)?,
+                        );
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.max_timeout_ms = Some(
+                            ::buffa::types::decode_uint32(&mut cur)?,
+                        );
+                    }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.max_output_bytes = Some(
+                            ::buffa::types::decode_uint64(&mut cur)?,
+                        );
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.allowed_programs
+                            .push(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::ShellToolConfig,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::ShellToolConfig,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::ShellToolConfig {
+                    workspace_root: self.workspace_root.map(|s| s.to_string()),
+                    allowed_programs: self
+                        .allowed_programs
+                        .iter()
+                        .map(|s| s.to_string())
+                        .collect(),
+                    default_timeout_ms: self.default_timeout_ms,
+                    max_timeout_ms: self.max_timeout_ms,
+                    max_output_bytes: self.max_output_bytes,
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for ShellToolConfigView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(ref v) = self.workspace_root {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                for v in &self.allowed_programs {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(v) = self.default_timeout_ms {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(v) = self.max_timeout_ms {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(v) = self.max_output_bytes {
+                    size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(ref v) = self.workspace_root {
+                    ::buffa::types::put_string_field(1u32, v, buf);
+                }
+                for v in &self.allowed_programs {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(v) = self.default_timeout_ms {
+                    ::buffa::types::put_uint32_field(3u32, v, buf);
+                }
+                if let Some(v) = self.max_timeout_ms {
+                    ::buffa::types::put_uint32_field(4u32, v, buf);
+                }
+                if let Some(v) = self.max_output_bytes {
+                    ::buffa::types::put_uint64_field(5u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for ShellToolConfigView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.workspace_root {
+                    __map.serialize_entry("workspaceRoot", __v)?;
+                }
+                if !self.allowed_programs.is_empty() {
+                    __map.serialize_entry("allowedPrograms", &*self.allowed_programs)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.default_timeout_ms {
+                    __map
+                        .serialize_entry(
+                            "defaultTimeoutMs",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.max_timeout_ms {
+                    __map
+                        .serialize_entry(
+                            "maxTimeoutMs",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.max_output_bytes {
+                    __map
+                        .serialize_entry(
+                            "maxOutputBytes",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for ShellToolConfigView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "ShellToolConfig";
+            const FULL_NAME: &'static str = "aiagentkit.v1.ShellToolConfig";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.ShellToolConfig";
+        }
+        ::buffa::impl_default_view_instance!(ShellToolConfigView);
+        ::buffa::impl_view_reborrow!(ShellToolConfigView);
+        /** Self-contained, `'static` owned view of a `ShellToolConfig` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`ShellToolConfigView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`ShellToolConfigView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct ShellToolConfigOwnedView(
+            ::buffa::OwnedView<ShellToolConfigView<'static>>,
+        );
+        impl ShellToolConfigOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ShellToolConfigOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ShellToolConfigOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::ShellToolConfig,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    ShellToolConfigOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`ShellToolConfigView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &ShellToolConfigView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::ShellToolConfig,
+                ::buffa::DecodeError,
+            > {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Workspace root; process cwd is resolved under this path.
+            ///
+            /// Field 1: `workspace_root`
+            #[must_use]
+            pub fn workspace_root(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().workspace_root
+            }
+            /// Allowed program basenames only (e.g. `go`, `git`). Empty = deny all.
+            /// Absolute paths and path separators in `RunCommand.program` are rejected.
+            ///
+            /// Field 2: `allowed_programs`
+            #[must_use]
+            pub fn allowed_programs(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().allowed_programs
+            }
+            /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+            ///
+            /// Field 3: `default_timeout_ms`
+            #[must_use]
+            pub fn default_timeout_ms(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().default_timeout_ms
+            }
+            /// Hard cap for timeouts (must be \>= 1).
+            ///
+            /// Field 4: `max_timeout_ms`
+            #[must_use]
+            pub fn max_timeout_ms(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().max_timeout_ms
+            }
+            /// Max captured stdout+stderr bytes combined (must be \>= 1).
+            ///
+            /// Field 5: `max_output_bytes`
+            #[must_use]
+            pub fn max_output_bytes(&self) -> ::core::option::Option<u64> {
+                self.0.reborrow().max_output_bytes
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<ShellToolConfigView<'static>>>
+        for ShellToolConfigOwnedView {
+            fn from(inner: ::buffa::OwnedView<ShellToolConfigView<'static>>) -> Self {
+                ShellToolConfigOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<ShellToolConfigOwnedView>
+        for ::buffa::OwnedView<ShellToolConfigView<'static>> {
+            fn from(wrapper: ShellToolConfigOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<ShellToolConfigView<'static>>>
+        for ShellToolConfigOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<ShellToolConfigView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::ShellToolConfig {
+            type View<'a> = ShellToolConfigView<'a>;
+            type ViewHandle = ShellToolConfigOwnedView;
+        }
+        impl ::serde::Serialize for ShellToolConfigOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// RunCommand is the input for the `run_command` tool (argv form; no shell).
+        #[derive(Clone, Debug, Default)]
+        pub struct RunCommandView<'a> {
+            /// Program basename only (must be on the allowlist); resolved via PATH.
+            ///
+            /// Field 1: `program`
+            pub program: ::core::option::Option<&'a str>,
+            /// Arguments passed to the program (not interpreted by a shell).
+            ///
+            /// Field 2: `args`
+            pub args: ::buffa::RepeatedView<'a, &'a str>,
+            /// Working directory relative to the workspace root (`"."` = workspace root).
+            ///
+            /// Field 3: `cwd`
+            pub cwd: ::core::option::Option<&'a str>,
+            /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+            ///
+            /// Field 4: `timeout_ms`
+            pub timeout_ms: ::core::option::Option<u32>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for RunCommandView<'a> {
+            type Owned = super::super::RunCommand;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.program = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.cwd = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.timeout_ms = Some(::buffa::types::decode_uint32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.args.push(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<super::super::RunCommand, ::buffa::DecodeError> {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<super::super::RunCommand, ::buffa::DecodeError> {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::RunCommand {
+                    program: self.program.map(|s| s.to_string()),
+                    args: self.args.iter().map(|s| s.to_string()).collect(),
+                    cwd: self.cwd.map(|s| s.to_string()),
+                    timeout_ms: self.timeout_ms,
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for RunCommandView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(ref v) = self.program {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                for v in &self.args {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.cwd {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(v) = self.timeout_ms {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(ref v) = self.program {
+                    ::buffa::types::put_string_field(1u32, v, buf);
+                }
+                for v in &self.args {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.cwd {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                if let Some(v) = self.timeout_ms {
+                    ::buffa::types::put_uint32_field(4u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for RunCommandView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.program {
+                    __map.serialize_entry("program", __v)?;
+                }
+                if !self.args.is_empty() {
+                    __map.serialize_entry("args", &*self.args)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.cwd {
+                    __map.serialize_entry("cwd", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.timeout_ms {
+                    __map
+                        .serialize_entry(
+                            "timeoutMs",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for RunCommandView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "RunCommand";
+            const FULL_NAME: &'static str = "aiagentkit.v1.RunCommand";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.RunCommand";
+        }
+        ::buffa::impl_default_view_instance!(RunCommandView);
+        ::buffa::impl_view_reborrow!(RunCommandView);
+        /** Self-contained, `'static` owned view of a `RunCommand` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`RunCommandView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`RunCommandView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct RunCommandOwnedView(::buffa::OwnedView<RunCommandView<'static>>);
+        impl RunCommandOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RunCommandOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RunCommandOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::RunCommand,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    RunCommandOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`RunCommandView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &RunCommandView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<super::super::RunCommand, ::buffa::DecodeError> {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Program basename only (must be on the allowlist); resolved via PATH.
+            ///
+            /// Field 1: `program`
+            #[must_use]
+            pub fn program(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().program
+            }
+            /// Arguments passed to the program (not interpreted by a shell).
+            ///
+            /// Field 2: `args`
+            #[must_use]
+            pub fn args(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
+                &self.0.reborrow().args
+            }
+            /// Working directory relative to the workspace root (`"."` = workspace root).
+            ///
+            /// Field 3: `cwd`
+            #[must_use]
+            pub fn cwd(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().cwd
+            }
+            /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+            ///
+            /// Field 4: `timeout_ms`
+            #[must_use]
+            pub fn timeout_ms(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().timeout_ms
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<RunCommandView<'static>>>
+        for RunCommandOwnedView {
+            fn from(inner: ::buffa::OwnedView<RunCommandView<'static>>) -> Self {
+                RunCommandOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<RunCommandOwnedView>
+        for ::buffa::OwnedView<RunCommandView<'static>> {
+            fn from(wrapper: RunCommandOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<RunCommandView<'static>>>
+        for RunCommandOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<RunCommandView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::RunCommand {
+            type View<'a> = RunCommandView<'a>;
+            type ViewHandle = RunCommandOwnedView;
+        }
+        impl ::serde::Serialize for RunCommandOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// CommandResult is the result of `run_command`.
+        #[derive(Clone, Debug, Default)]
+        pub struct CommandResultView<'a> {
+            /// Process exit code when it exited; unset/zero when timed out before exit.
+            ///
+            /// Field 1: `exit_code`
+            pub exit_code: ::core::option::Option<i32>,
+            /// Captured stdout (may be truncated).
+            ///
+            /// Field 2: `stdout`
+            pub stdout: ::core::option::Option<&'a str>,
+            /// Captured stderr (may be truncated).
+            ///
+            /// Field 3: `stderr`
+            pub stderr: ::core::option::Option<&'a str>,
+            /// True if the process was killed due to timeout.
+            ///
+            /// Field 4: `timed_out`
+            pub timed_out: ::core::option::Option<bool>,
+            /// True if stdout and/or stderr were truncated to the configured byte limit.
+            ///
+            /// Field 5: `truncated`
+            pub truncated: ::core::option::Option<bool>,
+            /// Wall time spent waiting for the process, in milliseconds.
+            ///
+            /// Field 6: `duration_ms`
+            pub duration_ms: ::core::option::Option<u64>,
+            /// Program basename that was executed.
+            ///
+            /// Field 7: `program`
+            pub program: ::core::option::Option<&'a str>,
+            /// Resolved working directory as requested (relative).
+            ///
+            /// Field 8: `cwd`
+            pub cwd: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for CommandResultView<'a> {
+            type Owned = super::super::CommandResult;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.exit_code = Some(::buffa::types::decode_int32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.stdout = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.stderr = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.timed_out = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.truncated = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    6u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.duration_ms = Some(
+                            ::buffa::types::decode_uint64(&mut cur)?,
+                        );
+                    }
+                    7u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.program = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    8u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.cwd = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::CommandResult,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::CommandResult,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::CommandResult {
+                    exit_code: self.exit_code,
+                    stdout: self.stdout.map(|s| s.to_string()),
+                    stderr: self.stderr.map(|s| s.to_string()),
+                    timed_out: self.timed_out,
+                    truncated: self.truncated,
+                    duration_ms: self.duration_ms,
+                    program: self.program.map(|s| s.to_string()),
+                    cwd: self.cwd.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for CommandResultView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(v) = self.exit_code {
+                    size += 1u32 + ::buffa::types::int32_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.stdout {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.stderr {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if self.timed_out.is_some() {
+                    size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+                }
+                if self.truncated.is_some() {
+                    size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+                }
+                if let Some(v) = self.duration_ms {
+                    size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.program {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.cwd {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.exit_code {
+                    ::buffa::types::put_int32_field(1u32, v, buf);
+                }
+                if let Some(ref v) = self.stdout {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.stderr {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                if let Some(v) = self.timed_out {
+                    ::buffa::types::put_bool_field(4u32, v, buf);
+                }
+                if let Some(v) = self.truncated {
+                    ::buffa::types::put_bool_field(5u32, v, buf);
+                }
+                if let Some(v) = self.duration_ms {
+                    ::buffa::types::put_uint64_field(6u32, v, buf);
+                }
+                if let Some(ref v) = self.program {
+                    ::buffa::types::put_string_field(7u32, v, buf);
+                }
+                if let Some(ref v) = self.cwd {
+                    ::buffa::types::put_string_field(8u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for CommandResultView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.exit_code {
+                    __map
+                        .serialize_entry(
+                            "exitCode",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.stdout {
+                    __map.serialize_entry("stdout", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.stderr {
+                    __map.serialize_entry("stderr", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.timed_out {
+                    __map.serialize_entry("timedOut", &__v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.truncated {
+                    __map.serialize_entry("truncated", &__v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.duration_ms {
+                    __map
+                        .serialize_entry(
+                            "durationMs",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.program {
+                    __map.serialize_entry("program", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.cwd {
+                    __map.serialize_entry("cwd", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for CommandResultView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "CommandResult";
+            const FULL_NAME: &'static str = "aiagentkit.v1.CommandResult";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.CommandResult";
+        }
+        ::buffa::impl_default_view_instance!(CommandResultView);
+        ::buffa::impl_view_reborrow!(CommandResultView);
+        /** Self-contained, `'static` owned view of a `CommandResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`CommandResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`CommandResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct CommandResultOwnedView(
+            ::buffa::OwnedView<CommandResultView<'static>>,
+        );
+        impl CommandResultOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    CommandResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    CommandResultOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::CommandResult,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    CommandResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`CommandResultView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &CommandResultView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::CommandResult,
+                ::buffa::DecodeError,
+            > {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Process exit code when it exited; unset/zero when timed out before exit.
+            ///
+            /// Field 1: `exit_code`
+            #[must_use]
+            pub fn exit_code(&self) -> ::core::option::Option<i32> {
+                self.0.reborrow().exit_code
+            }
+            /// Captured stdout (may be truncated).
+            ///
+            /// Field 2: `stdout`
+            #[must_use]
+            pub fn stdout(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().stdout
+            }
+            /// Captured stderr (may be truncated).
+            ///
+            /// Field 3: `stderr`
+            #[must_use]
+            pub fn stderr(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().stderr
+            }
+            /// True if the process was killed due to timeout.
+            ///
+            /// Field 4: `timed_out`
+            #[must_use]
+            pub fn timed_out(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().timed_out
+            }
+            /// True if stdout and/or stderr were truncated to the configured byte limit.
+            ///
+            /// Field 5: `truncated`
+            #[must_use]
+            pub fn truncated(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().truncated
+            }
+            /// Wall time spent waiting for the process, in milliseconds.
+            ///
+            /// Field 6: `duration_ms`
+            #[must_use]
+            pub fn duration_ms(&self) -> ::core::option::Option<u64> {
+                self.0.reborrow().duration_ms
+            }
+            /// Program basename that was executed.
+            ///
+            /// Field 7: `program`
+            #[must_use]
+            pub fn program(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().program
+            }
+            /// Resolved working directory as requested (relative).
+            ///
+            /// Field 8: `cwd`
+            #[must_use]
+            pub fn cwd(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().cwd
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<CommandResultView<'static>>>
+        for CommandResultOwnedView {
+            fn from(inner: ::buffa::OwnedView<CommandResultView<'static>>) -> Self {
+                CommandResultOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<CommandResultOwnedView>
+        for ::buffa::OwnedView<CommandResultView<'static>> {
+            fn from(wrapper: CommandResultOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<CommandResultView<'static>>>
+        for CommandResultOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<CommandResultView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::CommandResult {
+            type View<'a> = CommandResultView<'a>;
+            type ViewHandle = CommandResultOwnedView;
+        }
+        impl ::serde::Serialize for CommandResultOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
         /// LoadSkills is the input for \[`load_skills`\].
         #[derive(Clone, Debug, Default)]
         pub struct LoadSkillsView<'a> {
@@ -10590,6 +12675,9 @@ pub mod __buffa {
         reg.register_json_any(super::__WRITE_FILE_RESULT_JSON_ANY);
         reg.register_json_any(super::__OPEN_AI_COMPATIBLE_LLM_CONFIG_JSON_ANY);
         reg.register_json_any(super::__RETRY_POLICY_JSON_ANY);
+        reg.register_json_any(super::__SHELL_TOOL_CONFIG_JSON_ANY);
+        reg.register_json_any(super::__RUN_COMMAND_JSON_ANY);
+        reg.register_json_any(super::__COMMAND_RESULT_JSON_ANY);
         reg.register_json_any(super::__LOAD_SKILLS_JSON_ANY);
         reg.register_json_any(super::__SKILL_FILE_JSON_ANY);
         reg.register_json_any(super::__SKILL_BUNDLE_JSON_ANY);
@@ -10660,6 +12748,18 @@ pub use self::__buffa::view::OpenAiCompatibleLlmConfigOwnedView;
 pub use self::__buffa::view::RetryPolicyView;
 #[doc(inline)]
 pub use self::__buffa::view::RetryPolicyOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::ShellToolConfigView;
+#[doc(inline)]
+pub use self::__buffa::view::ShellToolConfigOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::RunCommandView;
+#[doc(inline)]
+pub use self::__buffa::view::RunCommandOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::CommandResultView;
+#[doc(inline)]
+pub use self::__buffa::view::CommandResultOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::LoadSkillsView;
 #[doc(inline)]

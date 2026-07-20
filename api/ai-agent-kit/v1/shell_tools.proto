@@ -1,0 +1,67 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// ShellToolConfig configures the workspace `run_command` tool (caller-supplied; no kit defaults).
+message ShellToolConfig {
+  // Workspace root; process cwd is resolved under this path.
+  string workspace_root = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Allowed program basenames only (e.g. `go`, `git`). Empty = deny all.
+  // Absolute paths and path separators in `RunCommand.program` are rejected.
+  repeated string allowed_programs = 2;
+  // Default timeout when `RunCommand.timeout_ms` is unset (must be >= 1).
+  uint32 default_timeout_ms = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Hard cap for timeouts (must be >= 1).
+  uint32 max_timeout_ms = 4 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Max captured stdout+stderr bytes combined (must be >= 1).
+  uint64 max_output_bytes = 5 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint64.gte = 1
+  ];
+}
+
+// RunCommand is the input for the `run_command` tool (argv form; no shell).
+message RunCommand {
+  // Program basename only (must be on the allowlist); resolved via PATH.
+  string program = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Arguments passed to the program (not interpreted by a shell).
+  repeated string args = 2;
+  // Working directory relative to the workspace root (`"."` = workspace root).
+  string cwd = 3;
+  // Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+  uint32 timeout_ms = 4;
+}
+
+// CommandResult is the result of `run_command`.
+message CommandResult {
+  // Process exit code when it exited; unset/zero when timed out before exit.
+  int32 exit_code = 1;
+  // Captured stdout (may be truncated).
+  string stdout = 2;
+  // Captured stderr (may be truncated).
+  string stderr = 3;
+  // True if the process was killed due to timeout.
+  bool timed_out = 4;
+  // True if stdout and/or stderr were truncated to the configured byte limit.
+  bool truncated = 5;
+  // Wall time spent waiting for the process, in milliseconds.
+  uint64 duration_ms = 6;
+  // Program basename that was executed.
+  string program = 7;
+  // Resolved working directory as requested (relative).
+  string cwd = 8;
+}
