@@ -1,10 +1,13 @@
 //! Minimal agent loop: LLM ↔ tools until final text or max steps.
 
-use api::aiagentkit::v1::{AgentTurn, Message, RunAgent, SkillBundle};
+use api::aiagentkit::v1::{
+    AgentLlmStep, AgentToolCall, AgentToolResult, AgentTurn, Message, RunAgent, SkillBundle,
+};
 
 use crate::llm::{
     assistant_message, system_message, tool_message, user_message, AssistantTurn, Llm, LlmError,
 };
+use crate::observe::{AgentObserver, NoopObserver};
 use crate::skills::{self, load_skills};
 use crate::tools::{ToolError, ToolRegistry};
 
@@ -56,6 +59,16 @@ pub async fn run_agent(
     params: &RunAgent,
     llm: &dyn Llm,
     tools: &ToolRegistry,
+) -> Result<AgentTurn, Error> {
+    run_agent_with_observer(params, llm, tools, &NoopObserver).await
+}
+
+/// Like [`run_agent`], but emits protobuf observability events to `observer`.
+pub async fn run_agent_with_observer(
+    params: &RunAgent,
+    llm: &dyn Llm,
+    tools: &ToolRegistry,
+    observer: &dyn AgentObserver,
 ) -> Result<AgentTurn, Error> {
     let user_message_text = params
         .user_message
@@ -116,6 +129,14 @@ pub async fn run_agent(
         let turn: AssistantTurn = llm.complete(&messages, &specs).await?;
         messages.push(assistant_message(&turn));
 
+        let content = turn.content.as_deref().unwrap_or("");
+        observer.on_llm_step(
+            &AgentLlmStep::default()
+                .with_step(steps)
+                .with_tool_call_count(turn.tool_calls.len() as u32)
+                .with_content(content),
+        );
+
         if turn.tool_calls.is_empty() {
             let mut result = AgentTurn::default()
                 .with_final_text(turn.content.unwrap_or_default())
@@ -128,10 +149,29 @@ pub async fn run_agent(
             let name = call.name.as_deref().unwrap_or("");
             let id = call.id.as_deref().unwrap_or("");
             let args = call.arguments_json.as_deref().unwrap_or("{}");
-            let output = match tools.call(name, args) {
-                Ok(s) => s,
-                Err(e) => e.to_string(),
+
+            observer.on_tool_call(
+                &AgentToolCall::default()
+                    .with_step(steps)
+                    .with_tool_call_id(id)
+                    .with_tool_name(name)
+                    .with_arguments_json(args),
+            );
+
+            let (ok, output) = match tools.call(name, args) {
+                Ok(s) => (true, s),
+                Err(e) => (false, e.to_string()),
             };
+
+            observer.on_tool_result(
+                &AgentToolResult::default()
+                    .with_step(steps)
+                    .with_tool_call_id(id)
+                    .with_tool_name(name)
+                    .with_ok(ok)
+                    .with_output(&output),
+            );
+
             messages.push(tool_message(id.to_owned(), name.to_owned(), output));
         }
     }
@@ -197,6 +237,27 @@ mod tests {
         }
     }
 
+    #[derive(Default)]
+    struct RecordingObserver {
+        llm_steps: Mutex<Vec<AgentLlmStep>>,
+        tool_calls: Mutex<Vec<AgentToolCall>>,
+        tool_results: Mutex<Vec<AgentToolResult>>,
+    }
+
+    impl AgentObserver for RecordingObserver {
+        fn on_llm_step(&self, event: &AgentLlmStep) {
+            self.llm_steps.lock().unwrap().push(event.clone());
+        }
+
+        fn on_tool_call(&self, event: &AgentToolCall) {
+            self.tool_calls.lock().unwrap().push(event.clone());
+        }
+
+        fn on_tool_result(&self, event: &AgentToolResult) {
+            self.tool_results.lock().unwrap().push(event.clone());
+        }
+    }
+
     #[tokio::test]
     async fn runs_tool_then_final_text() {
         let llm = FakeLlm::new(vec![
@@ -224,6 +285,54 @@ mod tests {
         assert_eq!(turn.final_text.as_deref(), Some("all good"));
         assert_eq!(turn.steps, Some(2));
         assert!(turn.messages.len() >= 4);
+    }
+
+    #[tokio::test]
+    async fn emits_observer_events_for_tool_loop() {
+        let llm = FakeLlm::new(vec![
+            AssistantTurn {
+                content: None,
+                tool_calls: vec![api::aiagentkit::v1::ToolCall::default()
+                    .with_id("call_1")
+                    .with_name("echo")
+                    .with_arguments_json(r#"{"text":"hi"}"#)],
+            },
+            AssistantTurn {
+                content: Some("all good".into()),
+                tool_calls: vec![],
+            },
+        ]);
+
+        let mut registry = ToolRegistry::new();
+        registry.register(EchoTool);
+        let observer = RecordingObserver::default();
+
+        let params = RunAgent::default()
+            .with_user_message("please echo")
+            .with_max_steps(4);
+
+        let _turn = run_agent_with_observer(&params, &llm, &registry, &observer)
+            .await
+            .unwrap();
+
+        let llm_steps = observer.llm_steps.lock().unwrap();
+        assert_eq!(llm_steps.len(), 2);
+        assert_eq!(llm_steps[0].tool_call_count, Some(1));
+        assert_eq!(llm_steps[1].tool_call_count, Some(0));
+        assert_eq!(llm_steps[1].content.as_deref(), Some("all good"));
+
+        let calls = observer.tool_calls.lock().unwrap();
+        assert_eq!(calls.len(), 1);
+        assert_eq!(calls[0].tool_name.as_deref(), Some("echo"));
+        assert_eq!(calls[0].arguments_json.as_deref(), Some(r#"{"text":"hi"}"#));
+
+        let results = observer.tool_results.lock().unwrap();
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].ok, Some(true));
+        assert_eq!(
+            results[0].output.as_deref(),
+            Some(r#"echoed:{"text":"hi"}"#)
+        );
     }
 
     #[tokio::test]

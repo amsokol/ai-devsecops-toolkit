@@ -1144,6 +1144,730 @@ pub const __AGENT_TURN_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa:
     from_json: ::buffa::type_registry::any_from_json::<AgentTurn>,
     is_wkt: false,
 };
+/// AgentLlmStep is emitted after each LLM completion within the agent loop.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct AgentLlmStep {
+    /// 1-based step index (LLM round).
+    ///
+    /// Field 1: `step`
+    #[serde(
+        rename = "step",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub step: ::core::option::Option<u32>,
+    /// Number of tool calls requested in this completion.
+    ///
+    /// Field 2: `tool_call_count`
+    #[serde(
+        rename = "toolCallCount",
+        alias = "tool_call_count",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub tool_call_count: ::core::option::Option<u32>,
+    /// Assistant text content when present (may be empty for pure tool-call turns).
+    ///
+    /// Field 3: `content`
+    #[serde(rename = "content", skip_serializing_if = "::core::option::Option::is_none")]
+    pub content: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for AgentLlmStep {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("AgentLlmStep")
+            .field("step", &self.step)
+            .field("tool_call_count", &self.tool_call_count)
+            .field("content", &self.content)
+            .finish()
+    }
+}
+impl AgentLlmStep {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentLlmStep";
+}
+impl AgentLlmStep {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::step`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_step(mut self, value: u32) -> Self {
+        self.step = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::tool_call_count`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_tool_call_count(mut self, value: u32) -> Self {
+        self.tool_call_count = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::content`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_content(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.content = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(AgentLlmStep);
+impl ::buffa::MessageName for AgentLlmStep {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "AgentLlmStep";
+    const FULL_NAME: &'static str = "aiagentkit.v1.AgentLlmStep";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentLlmStep";
+}
+impl ::buffa::Message for AgentLlmStep {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(v) = self.step {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(v) = self.tool_call_count {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.content {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.step {
+            ::buffa::types::put_uint32_field(1u32, v, buf);
+        }
+        if let Some(v) = self.tool_call_count {
+            ::buffa::types::put_uint32_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.content {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.step = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.tool_call_count = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.content.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.step = ::core::option::Option::None;
+        self.tool_call_count = ::core::option::Option::None;
+        self.content = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for AgentLlmStep {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.AgentLlmStep";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for AgentLlmStep {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __AGENT_LLM_STEP_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.AgentLlmStep",
+    to_json: ::buffa::type_registry::any_to_json::<AgentLlmStep>,
+    from_json: ::buffa::type_registry::any_from_json::<AgentLlmStep>,
+    is_wkt: false,
+};
+/// AgentToolCall is emitted before executing a tool.
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct AgentToolCall {
+    /// Field 1: `step`
+    #[serde(
+        rename = "step",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub step: ::core::option::Option<u32>,
+    /// Field 2: `tool_call_id`
+    #[serde(
+        rename = "toolCallId",
+        alias = "tool_call_id",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub tool_call_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 3: `tool_name`
+    #[serde(
+        rename = "toolName",
+        alias = "tool_name",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub tool_name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 4: `arguments_json`
+    #[serde(
+        rename = "argumentsJson",
+        alias = "arguments_json",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub arguments_json: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for AgentToolCall {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("AgentToolCall")
+            .field("step", &self.step)
+            .field("tool_call_id", &self.tool_call_id)
+            .field("tool_name", &self.tool_name)
+            .field("arguments_json", &self.arguments_json)
+            .finish()
+    }
+}
+impl AgentToolCall {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolCall";
+}
+impl AgentToolCall {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::step`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_step(mut self, value: u32) -> Self {
+        self.step = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::tool_call_id`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_tool_call_id(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.tool_call_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::tool_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_tool_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.tool_name = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::arguments_json`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_arguments_json(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.arguments_json = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(AgentToolCall);
+impl ::buffa::MessageName for AgentToolCall {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "AgentToolCall";
+    const FULL_NAME: &'static str = "aiagentkit.v1.AgentToolCall";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolCall";
+}
+impl ::buffa::Message for AgentToolCall {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(v) = self.step {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.tool_call_id {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.tool_name {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.arguments_json {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.step {
+            ::buffa::types::put_uint32_field(1u32, v, buf);
+        }
+        if let Some(ref v) = self.tool_call_id {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.tool_name {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let Some(ref v) = self.arguments_json {
+            ::buffa::types::put_string_field(4u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.step = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .tool_call_id
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .tool_name
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .arguments_json
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.step = ::core::option::Option::None;
+        self.tool_call_id = ::core::option::Option::None;
+        self.tool_name = ::core::option::Option::None;
+        self.arguments_json = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for AgentToolCall {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.AgentToolCall";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for AgentToolCall {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __AGENT_TOOL_CALL_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.AgentToolCall",
+    to_json: ::buffa::type_registry::any_to_json::<AgentToolCall>,
+    from_json: ::buffa::type_registry::any_from_json::<AgentToolCall>,
+    is_wkt: false,
+};
+/// AgentToolResult is emitted after a tool returns (ok or error text).
+#[derive(Clone, PartialEq, Default)]
+#[derive(::serde::Serialize, ::serde::Deserialize)]
+#[serde(default)]
+pub struct AgentToolResult {
+    /// Field 1: `step`
+    #[serde(
+        rename = "step",
+        with = "::buffa::json_helpers::opt_uint32",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub step: ::core::option::Option<u32>,
+    /// Field 2: `tool_call_id`
+    #[serde(
+        rename = "toolCallId",
+        alias = "tool_call_id",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub tool_call_id: ::core::option::Option<::buffa::alloc::string::String>,
+    /// Field 3: `tool_name`
+    #[serde(
+        rename = "toolName",
+        alias = "tool_name",
+        skip_serializing_if = "::core::option::Option::is_none"
+    )]
+    pub tool_name: ::core::option::Option<::buffa::alloc::string::String>,
+    /// True when ToolRegistry returned Ok.
+    ///
+    /// Field 4: `ok`
+    #[serde(rename = "ok", skip_serializing_if = "::core::option::Option::is_none")]
+    pub ok: ::core::option::Option<bool>,
+    /// Tool stdout JSON or error string.
+    ///
+    /// Field 5: `output`
+    #[serde(rename = "output", skip_serializing_if = "::core::option::Option::is_none")]
+    pub output: ::core::option::Option<::buffa::alloc::string::String>,
+    #[serde(skip)]
+    #[doc(hidden)]
+    pub __buffa_unknown_fields: ::buffa::UnknownFields,
+}
+impl ::core::fmt::Debug for AgentToolResult {
+    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+        f.debug_struct("AgentToolResult")
+            .field("step", &self.step)
+            .field("tool_call_id", &self.tool_call_id)
+            .field("tool_name", &self.tool_name)
+            .field("ok", &self.ok)
+            .field("output", &self.output)
+            .finish()
+    }
+}
+impl AgentToolResult {
+    /// Protobuf type URL for this message, for use with `Any::pack` and
+    /// `Any::unpack_if`.
+    ///
+    /// Format: `type.googleapis.com/<fully.qualified.TypeName>`
+    pub const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolResult";
+}
+impl AgentToolResult {
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::step`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_step(mut self, value: u32) -> Self {
+        self.step = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::tool_call_id`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_tool_call_id(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.tool_call_id = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::tool_name`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_tool_name(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.tool_name = Some(value.into());
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::ok`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_ok(mut self, value: bool) -> Self {
+        self.ok = Some(value);
+        self
+    }
+    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
+    #[inline]
+    ///Sets [`Self::output`] to `Some(value)`, consuming and returning `self`.
+    pub fn with_output(
+        mut self,
+        value: impl Into<::buffa::alloc::string::String>,
+    ) -> Self {
+        self.output = Some(value.into());
+        self
+    }
+}
+::buffa::impl_default_instance!(AgentToolResult);
+impl ::buffa::MessageName for AgentToolResult {
+    const PACKAGE: &'static str = "aiagentkit.v1";
+    const NAME: &'static str = "AgentToolResult";
+    const FULL_NAME: &'static str = "aiagentkit.v1.AgentToolResult";
+    const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolResult";
+}
+impl ::buffa::Message for AgentToolResult {
+    /// Returns the total encoded size in bytes.
+    ///
+    /// The result is a `u32`; the protobuf specification requires all
+    /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
+    /// compliant message will never overflow this type.
+    #[allow(clippy::let_and_return)]
+    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        let mut size = 0u32;
+        if let Some(v) = self.step {
+            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.tool_call_id {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if let Some(ref v) = self.tool_name {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        if self.ok.is_some() {
+            size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+        }
+        if let Some(ref v) = self.output {
+            size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+        }
+        size += self.__buffa_unknown_fields.encoded_len() as u32;
+        size
+    }
+    fn write_to(
+        &self,
+        _cache: &mut ::buffa::SizeCache,
+        buf: &mut impl ::buffa::bytes::BufMut,
+    ) {
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        if let Some(v) = self.step {
+            ::buffa::types::put_uint32_field(1u32, v, buf);
+        }
+        if let Some(ref v) = self.tool_call_id {
+            ::buffa::types::put_string_field(2u32, v, buf);
+        }
+        if let Some(ref v) = self.tool_name {
+            ::buffa::types::put_string_field(3u32, v, buf);
+        }
+        if let Some(v) = self.ok {
+            ::buffa::types::put_bool_field(4u32, v, buf);
+        }
+        if let Some(ref v) = self.output {
+            ::buffa::types::put_string_field(5u32, v, buf);
+        }
+        self.__buffa_unknown_fields.write_to(buf);
+    }
+    fn merge_field(
+        &mut self,
+        tag: ::buffa::encoding::Tag,
+        buf: &mut impl ::buffa::bytes::Buf,
+        ctx: ::buffa::DecodeContext<'_>,
+    ) -> ::core::result::Result<(), ::buffa::DecodeError> {
+        #[allow(unused_imports)]
+        use ::buffa::bytes::Buf as _;
+        #[allow(unused_imports)]
+        use ::buffa::Enumeration as _;
+        match tag.field_number() {
+            1u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.step = ::core::option::Option::Some(
+                    ::buffa::types::decode_uint32(buf)?,
+                );
+            }
+            2u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .tool_call_id
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            3u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self
+                        .tool_name
+                        .get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            4u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::Varint,
+                )?;
+                self.ok = ::core::option::Option::Some(
+                    ::buffa::types::decode_bool(buf)?,
+                );
+            }
+            5u32 => {
+                ::buffa::encoding::check_wire_type(
+                    tag,
+                    ::buffa::encoding::WireType::LengthDelimited,
+                )?;
+                ::buffa::types::merge_string(
+                    self.output.get_or_insert_with(::buffa::alloc::string::String::new),
+                    buf,
+                )?;
+            }
+            _ => {
+                self.__buffa_unknown_fields
+                    .push(::buffa::encoding::decode_unknown_field(tag, buf, ctx)?);
+            }
+        }
+        ::core::result::Result::Ok(())
+    }
+    fn clear(&mut self) {
+        self.step = ::core::option::Option::None;
+        self.tool_call_id = ::core::option::Option::None;
+        self.tool_name = ::core::option::Option::None;
+        self.ok = ::core::option::Option::None;
+        self.output = ::core::option::Option::None;
+        self.__buffa_unknown_fields.clear();
+    }
+}
+impl ::buffa::ExtensionSet for AgentToolResult {
+    const PROTO_FQN: &'static str = "aiagentkit.v1.AgentToolResult";
+    fn unknown_fields(&self) -> &::buffa::UnknownFields {
+        &self.__buffa_unknown_fields
+    }
+    fn unknown_fields_mut(&mut self) -> &mut ::buffa::UnknownFields {
+        &mut self.__buffa_unknown_fields
+    }
+}
+impl ::buffa::json_helpers::ProtoElemJson for AgentToolResult {
+    fn serialize_proto_json<S: ::serde::Serializer>(
+        v: &Self,
+        s: S,
+    ) -> ::core::result::Result<S::Ok, S::Error> {
+        ::serde::Serialize::serialize(v, s)
+    }
+    fn deserialize_proto_json<'de, D: ::serde::Deserializer<'de>>(
+        d: D,
+    ) -> ::core::result::Result<Self, D::Error> {
+        <Self as ::serde::Deserialize>::deserialize(d)
+    }
+}
+#[doc(hidden)]
+pub const __AGENT_TOOL_RESULT_JSON_ANY: ::buffa::type_registry::JsonAnyEntry = ::buffa::type_registry::JsonAnyEntry {
+    type_url: "type.googleapis.com/aiagentkit.v1.AgentToolResult",
+    to_json: ::buffa::type_registry::any_to_json::<AgentToolResult>,
+    from_json: ::buffa::type_registry::any_from_json::<AgentToolResult>,
+    is_wkt: false,
+};
 /// ReadFile is the input for the `read_file` tool.
 #[derive(Clone, PartialEq, Default)]
 #[derive(::serde::Serialize, ::serde::Deserialize)]
@@ -4917,6 +5641,1046 @@ pub mod __buffa {
             type ViewHandle = AgentTurnOwnedView;
         }
         impl ::serde::Serialize for AgentTurnOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// AgentLlmStep is emitted after each LLM completion within the agent loop.
+        #[derive(Clone, Debug, Default)]
+        pub struct AgentLlmStepView<'a> {
+            /// 1-based step index (LLM round).
+            ///
+            /// Field 1: `step`
+            pub step: ::core::option::Option<u32>,
+            /// Number of tool calls requested in this completion.
+            ///
+            /// Field 2: `tool_call_count`
+            pub tool_call_count: ::core::option::Option<u32>,
+            /// Assistant text content when present (may be empty for pure tool-call turns).
+            ///
+            /// Field 3: `content`
+            pub content: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for AgentLlmStepView<'a> {
+            type Owned = super::super::AgentLlmStep;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.step = Some(::buffa::types::decode_uint32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.tool_call_count = Some(
+                            ::buffa::types::decode_uint32(&mut cur)?,
+                        );
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.content = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentLlmStep,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::AgentLlmStep,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::AgentLlmStep {
+                    step: self.step,
+                    tool_call_count: self.tool_call_count,
+                    content: self.content.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for AgentLlmStepView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(v) = self.step {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(v) = self.tool_call_count {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.content {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.step {
+                    ::buffa::types::put_uint32_field(1u32, v, buf);
+                }
+                if let Some(v) = self.tool_call_count {
+                    ::buffa::types::put_uint32_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.content {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for AgentLlmStepView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.step {
+                    __map
+                        .serialize_entry(
+                            "step",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.tool_call_count {
+                    __map
+                        .serialize_entry(
+                            "toolCallCount",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.content {
+                    __map.serialize_entry("content", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for AgentLlmStepView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "AgentLlmStep";
+            const FULL_NAME: &'static str = "aiagentkit.v1.AgentLlmStep";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentLlmStep";
+        }
+        ::buffa::impl_default_view_instance!(AgentLlmStepView);
+        ::buffa::impl_view_reborrow!(AgentLlmStepView);
+        /** Self-contained, `'static` owned view of a `AgentLlmStep` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`AgentLlmStepView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`AgentLlmStepView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct AgentLlmStepOwnedView(::buffa::OwnedView<AgentLlmStepView<'static>>);
+        impl AgentLlmStepOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentLlmStepOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentLlmStepOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::AgentLlmStep,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentLlmStepOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`AgentLlmStepView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &AgentLlmStepView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentLlmStep,
+                ::buffa::DecodeError,
+            > {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// 1-based step index (LLM round).
+            ///
+            /// Field 1: `step`
+            #[must_use]
+            pub fn step(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().step
+            }
+            /// Number of tool calls requested in this completion.
+            ///
+            /// Field 2: `tool_call_count`
+            #[must_use]
+            pub fn tool_call_count(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().tool_call_count
+            }
+            /// Assistant text content when present (may be empty for pure tool-call turns).
+            ///
+            /// Field 3: `content`
+            #[must_use]
+            pub fn content(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().content
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<AgentLlmStepView<'static>>>
+        for AgentLlmStepOwnedView {
+            fn from(inner: ::buffa::OwnedView<AgentLlmStepView<'static>>) -> Self {
+                AgentLlmStepOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<AgentLlmStepOwnedView>
+        for ::buffa::OwnedView<AgentLlmStepView<'static>> {
+            fn from(wrapper: AgentLlmStepOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<AgentLlmStepView<'static>>>
+        for AgentLlmStepOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<AgentLlmStepView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::AgentLlmStep {
+            type View<'a> = AgentLlmStepView<'a>;
+            type ViewHandle = AgentLlmStepOwnedView;
+        }
+        impl ::serde::Serialize for AgentLlmStepOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// AgentToolCall is emitted before executing a tool.
+        #[derive(Clone, Debug, Default)]
+        pub struct AgentToolCallView<'a> {
+            /// Field 1: `step`
+            pub step: ::core::option::Option<u32>,
+            /// Field 2: `tool_call_id`
+            pub tool_call_id: ::core::option::Option<&'a str>,
+            /// Field 3: `tool_name`
+            pub tool_name: ::core::option::Option<&'a str>,
+            /// Field 4: `arguments_json`
+            pub arguments_json: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for AgentToolCallView<'a> {
+            type Owned = super::super::AgentToolCall;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.step = Some(::buffa::types::decode_uint32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.tool_call_id = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.tool_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.arguments_json = Some(
+                            ::buffa::types::borrow_str(&mut cur)?,
+                        );
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentToolCall,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::AgentToolCall,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::AgentToolCall {
+                    step: self.step,
+                    tool_call_id: self.tool_call_id.map(|s| s.to_string()),
+                    tool_name: self.tool_name.map(|s| s.to_string()),
+                    arguments_json: self.arguments_json.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for AgentToolCallView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(v) = self.step {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.tool_call_id {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.tool_name {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.arguments_json {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.step {
+                    ::buffa::types::put_uint32_field(1u32, v, buf);
+                }
+                if let Some(ref v) = self.tool_call_id {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.tool_name {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                if let Some(ref v) = self.arguments_json {
+                    ::buffa::types::put_string_field(4u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for AgentToolCallView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.step {
+                    __map
+                        .serialize_entry(
+                            "step",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.tool_call_id {
+                    __map.serialize_entry("toolCallId", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.tool_name {
+                    __map.serialize_entry("toolName", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.arguments_json {
+                    __map.serialize_entry("argumentsJson", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for AgentToolCallView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "AgentToolCall";
+            const FULL_NAME: &'static str = "aiagentkit.v1.AgentToolCall";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolCall";
+        }
+        ::buffa::impl_default_view_instance!(AgentToolCallView);
+        ::buffa::impl_view_reborrow!(AgentToolCallView);
+        /** Self-contained, `'static` owned view of a `AgentToolCall` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`AgentToolCallView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`AgentToolCallView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct AgentToolCallOwnedView(
+            ::buffa::OwnedView<AgentToolCallView<'static>>,
+        );
+        impl AgentToolCallOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolCallOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolCallOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::AgentToolCall,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolCallOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`AgentToolCallView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &AgentToolCallView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentToolCall,
+                ::buffa::DecodeError,
+            > {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `step`
+            #[must_use]
+            pub fn step(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().step
+            }
+            /// Field 2: `tool_call_id`
+            #[must_use]
+            pub fn tool_call_id(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().tool_call_id
+            }
+            /// Field 3: `tool_name`
+            #[must_use]
+            pub fn tool_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().tool_name
+            }
+            /// Field 4: `arguments_json`
+            #[must_use]
+            pub fn arguments_json(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().arguments_json
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<AgentToolCallView<'static>>>
+        for AgentToolCallOwnedView {
+            fn from(inner: ::buffa::OwnedView<AgentToolCallView<'static>>) -> Self {
+                AgentToolCallOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<AgentToolCallOwnedView>
+        for ::buffa::OwnedView<AgentToolCallView<'static>> {
+            fn from(wrapper: AgentToolCallOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<AgentToolCallView<'static>>>
+        for AgentToolCallOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<AgentToolCallView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::AgentToolCall {
+            type View<'a> = AgentToolCallView<'a>;
+            type ViewHandle = AgentToolCallOwnedView;
+        }
+        impl ::serde::Serialize for AgentToolCallOwnedView {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                ::serde::Serialize::serialize(&self.0, __s)
+            }
+        }
+        /// AgentToolResult is emitted after a tool returns (ok or error text).
+        #[derive(Clone, Debug, Default)]
+        pub struct AgentToolResultView<'a> {
+            /// Field 1: `step`
+            pub step: ::core::option::Option<u32>,
+            /// Field 2: `tool_call_id`
+            pub tool_call_id: ::core::option::Option<&'a str>,
+            /// Field 3: `tool_name`
+            pub tool_name: ::core::option::Option<&'a str>,
+            /// True when ToolRegistry returned Ok.
+            ///
+            /// Field 4: `ok`
+            pub ok: ::core::option::Option<bool>,
+            /// Tool stdout JSON or error string.
+            ///
+            /// Field 5: `output`
+            pub output: ::core::option::Option<&'a str>,
+            pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
+        }
+        impl<'a> ::buffa::MessageView<'a> for AgentToolResultView<'a> {
+            type Owned = super::super::AgentToolResult;
+            fn decode_view(
+                buf: &'a [u8],
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                let __limit = ::core::cell::Cell::new(
+                    ::buffa::DEFAULT_UNKNOWN_FIELD_LIMIT,
+                );
+                <Self as ::buffa::MessageView>::decode_view_ctx(
+                    buf,
+                    ::buffa::DecodeContext::new(::buffa::RECURSION_LIMIT, &__limit),
+                )
+            }
+            fn decode_view_with_ctx(
+                buf: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                <Self as ::buffa::MessageView>::decode_view_ctx(buf, ctx)
+            }
+            fn merge_view_field(
+                &mut self,
+                tag: ::buffa::encoding::Tag,
+                cur: &'a [u8],
+                before_tag: &'a [u8],
+                ctx: ::buffa::DecodeContext<'_>,
+            ) -> ::core::result::Result<&'a [u8], ::buffa::DecodeError> {
+                let _ = ctx;
+                #[allow(unused_variables)]
+                let view = self;
+                let mut cur = cur;
+                match tag.field_number() {
+                    1u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.step = Some(::buffa::types::decode_uint32(&mut cur)?);
+                    }
+                    2u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.tool_call_id = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    3u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.tool_name = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    4u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::Varint,
+                        )?;
+                        view.ok = Some(::buffa::types::decode_bool(&mut cur)?);
+                    }
+                    5u32 => {
+                        ::buffa::encoding::check_wire_type(
+                            tag,
+                            ::buffa::encoding::WireType::LengthDelimited,
+                        )?;
+                        view.output = Some(::buffa::types::borrow_str(&mut cur)?);
+                    }
+                    _ => {
+                        ::buffa::encoding::skip_field_depth(tag, &mut cur, ctx.depth())?;
+                        let span_len = before_tag.len() - cur.len();
+                        view.__buffa_unknown_fields
+                            .push_record(before_tag, span_len, ctx)?;
+                    }
+                }
+                ::core::result::Result::Ok(cur)
+            }
+            fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentToolResult,
+                ::buffa::DecodeError,
+            > {
+                self.to_owned_from_source(None)
+            }
+            #[allow(clippy::useless_conversion, clippy::needless_update)]
+            fn to_owned_from_source(
+                &self,
+                __buffa_src: ::core::option::Option<&::buffa::bytes::Bytes>,
+            ) -> ::core::result::Result<
+                super::super::AgentToolResult,
+                ::buffa::DecodeError,
+            > {
+                #[allow(unused_imports)]
+                use ::buffa::alloc::string::ToString as _;
+                let _ = __buffa_src;
+                ::core::result::Result::Ok(super::super::AgentToolResult {
+                    step: self.step,
+                    tool_call_id: self.tool_call_id.map(|s| s.to_string()),
+                    tool_name: self.tool_name.map(|s| s.to_string()),
+                    ok: self.ok,
+                    output: self.output.map(|s| s.to_string()),
+                    __buffa_unknown_fields: self
+                        .__buffa_unknown_fields
+                        .to_owned()?
+                        .into(),
+                    ..::core::default::Default::default()
+                })
+            }
+        }
+        impl<'a> ::buffa::ViewEncode<'a> for AgentToolResultView<'a> {
+            #[allow(clippy::needless_borrow, clippy::let_and_return)]
+            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                let mut size = 0u32;
+                if let Some(v) = self.step {
+                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.tool_call_id {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if let Some(ref v) = self.tool_name {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                if self.ok.is_some() {
+                    size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
+                }
+                if let Some(ref v) = self.output {
+                    size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
+                }
+                size += self.__buffa_unknown_fields.encoded_len() as u32;
+                size
+            }
+            #[allow(clippy::needless_borrow)]
+            fn write_to(
+                &self,
+                _cache: &mut ::buffa::SizeCache,
+                buf: &mut impl ::buffa::bytes::BufMut,
+            ) {
+                #[allow(unused_imports)]
+                use ::buffa::Enumeration as _;
+                if let Some(v) = self.step {
+                    ::buffa::types::put_uint32_field(1u32, v, buf);
+                }
+                if let Some(ref v) = self.tool_call_id {
+                    ::buffa::types::put_string_field(2u32, v, buf);
+                }
+                if let Some(ref v) = self.tool_name {
+                    ::buffa::types::put_string_field(3u32, v, buf);
+                }
+                if let Some(v) = self.ok {
+                    ::buffa::types::put_bool_field(4u32, v, buf);
+                }
+                if let Some(ref v) = self.output {
+                    ::buffa::types::put_string_field(5u32, v, buf);
+                }
+                self.__buffa_unknown_fields.write_to(buf);
+            }
+        }
+        /// Serializes this view as protobuf JSON.
+        ///
+        /// Implicit-presence fields with default values are omitted, `required`
+        /// fields are always emitted, explicit-presence (`optional`) fields are
+        /// emitted only when set, bytes fields are base64-encoded, and enum
+        /// values are their proto name strings.
+        ///
+        /// This impl uses `serialize_map(None)` because the number of emitted
+        /// fields depends on default-omission rules; serializers that require
+        /// known map lengths (e.g. `bincode`) will return a runtime error.
+        /// Use the owned message type for those formats.
+        impl<'__a> ::serde::Serialize for AgentToolResultView<'__a> {
+            fn serialize<__S: ::serde::Serializer>(
+                &self,
+                __s: __S,
+            ) -> ::core::result::Result<__S::Ok, __S::Error> {
+                use ::serde::ser::SerializeMap as _;
+                let mut __map = __s.serialize_map(::core::option::Option::None)?;
+                if let ::core::option::Option::Some(__v) = self.step {
+                    __map
+                        .serialize_entry(
+                            "step",
+                            &::buffa::json_helpers::ProtoJson(&__v),
+                        )?;
+                }
+                if let ::core::option::Option::Some(__v) = self.tool_call_id {
+                    __map.serialize_entry("toolCallId", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.tool_name {
+                    __map.serialize_entry("toolName", __v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.ok {
+                    __map.serialize_entry("ok", &__v)?;
+                }
+                if let ::core::option::Option::Some(__v) = self.output {
+                    __map.serialize_entry("output", __v)?;
+                }
+                __map.end()
+            }
+        }
+        impl<'a> ::buffa::MessageName for AgentToolResultView<'a> {
+            const PACKAGE: &'static str = "aiagentkit.v1";
+            const NAME: &'static str = "AgentToolResult";
+            const FULL_NAME: &'static str = "aiagentkit.v1.AgentToolResult";
+            const TYPE_URL: &'static str = "type.googleapis.com/aiagentkit.v1.AgentToolResult";
+        }
+        ::buffa::impl_default_view_instance!(AgentToolResultView);
+        ::buffa::impl_view_reborrow!(AgentToolResultView);
+        /** Self-contained, `'static` owned view of a `AgentToolResult` message.
+
+ Wraps [`::buffa::OwnedView`]`<`[`AgentToolResultView`]`<'static>>`: the decoded view and the [`::buffa::bytes::Bytes`] buffer it borrows from travel together, so the handle is `'static` and `Send + Sync` — suitable for async handlers, spawned tasks, and anywhere a `'static` bound is required.
+
+ Field accessors return borrows tied to `&self`. Use [`Self::view`] to get the full [`AgentToolResultView`] when you need struct patterns, iteration helpers, or to pass the view to lifetime-parameterised code.*/
+        #[derive(Clone, Debug)]
+        pub struct AgentToolResultOwnedView(
+            ::buffa::OwnedView<AgentToolResultView<'static>>,
+        );
+        impl AgentToolResultOwnedView {
+            /// Decode an owned view from a [`::buffa::bytes::Bytes`] buffer.
+            ///
+            /// The view borrows directly from the buffer's data; the buffer is
+            /// retained inside the returned handle.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer contains invalid
+            /// protobuf data.
+            pub fn decode(
+                bytes: ::buffa::bytes::Bytes,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolResultOwnedView(::buffa::OwnedView::decode(bytes)?),
+                )
+            }
+            /// Decode with custom [`::buffa::DecodeOptions`] (recursion limit,
+            /// max message size).
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the buffer is invalid or
+            /// exceeds the configured limits.
+            pub fn decode_with_options(
+                bytes: ::buffa::bytes::Bytes,
+                opts: &::buffa::DecodeOptions,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolResultOwnedView(
+                        ::buffa::OwnedView::decode_with_options(bytes, opts)?,
+                    ),
+                )
+            }
+            /// Build from an owned message via an encode → decode round-trip.
+            ///
+            /// # Errors
+            ///
+            /// Returns [`::buffa::DecodeError`] if the re-encoded bytes are
+            /// somehow invalid (should not happen for well-formed messages).
+            pub fn from_owned(
+                msg: &super::super::AgentToolResult,
+            ) -> ::core::result::Result<Self, ::buffa::DecodeError> {
+                ::core::result::Result::Ok(
+                    AgentToolResultOwnedView(::buffa::OwnedView::from_owned(msg)?),
+                )
+            }
+            /// Borrow the full [`AgentToolResultView`] with its lifetime tied to `&self`.
+            #[must_use]
+            pub fn view(&self) -> &AgentToolResultView<'_> {
+                self.0.reborrow()
+            }
+            /// Convert to the owned message type.
+            ///
+            /// # Errors
+            ///
+            /// Returns an error if re-materializing preserved unknown fields
+            /// fails (e.g. the unknown-field limit is exceeded).
+            pub fn to_owned_message(
+                &self,
+            ) -> ::core::result::Result<
+                super::super::AgentToolResult,
+                ::buffa::DecodeError,
+            > {
+                self.0.to_owned_message()
+            }
+            /// The underlying bytes buffer.
+            #[must_use]
+            pub fn bytes(&self) -> &::buffa::bytes::Bytes {
+                self.0.bytes()
+            }
+            /// Consume the handle, returning the underlying bytes buffer.
+            #[must_use]
+            pub fn into_bytes(self) -> ::buffa::bytes::Bytes {
+                self.0.into_bytes()
+            }
+            /// Field 1: `step`
+            #[must_use]
+            pub fn step(&self) -> ::core::option::Option<u32> {
+                self.0.reborrow().step
+            }
+            /// Field 2: `tool_call_id`
+            #[must_use]
+            pub fn tool_call_id(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().tool_call_id
+            }
+            /// Field 3: `tool_name`
+            #[must_use]
+            pub fn tool_name(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().tool_name
+            }
+            /// True when ToolRegistry returned Ok.
+            ///
+            /// Field 4: `ok`
+            #[must_use]
+            pub fn ok(&self) -> ::core::option::Option<bool> {
+                self.0.reborrow().ok
+            }
+            /// Tool stdout JSON or error string.
+            ///
+            /// Field 5: `output`
+            #[must_use]
+            pub fn output(&self) -> ::core::option::Option<&'_ str> {
+                self.0.reborrow().output
+            }
+        }
+        impl ::core::convert::From<::buffa::OwnedView<AgentToolResultView<'static>>>
+        for AgentToolResultOwnedView {
+            fn from(inner: ::buffa::OwnedView<AgentToolResultView<'static>>) -> Self {
+                AgentToolResultOwnedView(inner)
+            }
+        }
+        impl ::core::convert::From<AgentToolResultOwnedView>
+        for ::buffa::OwnedView<AgentToolResultView<'static>> {
+            fn from(wrapper: AgentToolResultOwnedView) -> Self {
+                wrapper.0
+            }
+        }
+        impl ::core::convert::AsRef<::buffa::OwnedView<AgentToolResultView<'static>>>
+        for AgentToolResultOwnedView {
+            fn as_ref(&self) -> &::buffa::OwnedView<AgentToolResultView<'static>> {
+                &self.0
+            }
+        }
+        impl ::buffa::HasMessageView for super::super::AgentToolResult {
+            type View<'a> = AgentToolResultView<'a>;
+            type ViewHandle = AgentToolResultOwnedView;
+        }
+        impl ::serde::Serialize for AgentToolResultOwnedView {
             fn serialize<__S: ::serde::Serializer>(
                 &self,
                 __s: __S,
@@ -8814,6 +10578,9 @@ pub mod __buffa {
         reg.register_json_any(super::__MESSAGE_JSON_ANY);
         reg.register_json_any(super::__RUN_AGENT_JSON_ANY);
         reg.register_json_any(super::__AGENT_TURN_JSON_ANY);
+        reg.register_json_any(super::__AGENT_LLM_STEP_JSON_ANY);
+        reg.register_json_any(super::__AGENT_TOOL_CALL_JSON_ANY);
+        reg.register_json_any(super::__AGENT_TOOL_RESULT_JSON_ANY);
         reg.register_json_any(super::__READ_FILE_JSON_ANY);
         reg.register_json_any(super::__FILE_CONTENT_JSON_ANY);
         reg.register_json_any(super::__LIST_DIR_JSON_ANY);
@@ -8845,6 +10612,18 @@ pub use self::__buffa::view::RunAgentOwnedView;
 pub use self::__buffa::view::AgentTurnView;
 #[doc(inline)]
 pub use self::__buffa::view::AgentTurnOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentLlmStepView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentLlmStepOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentToolCallView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentToolCallOwnedView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentToolResultView;
+#[doc(inline)]
+pub use self::__buffa::view::AgentToolResultOwnedView;
 #[doc(inline)]
 pub use self::__buffa::view::ReadFileView;
 #[doc(inline)]

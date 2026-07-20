@@ -22,30 +22,33 @@
 mod agent;
 mod fs_tools;
 mod llm;
+mod observe;
 mod skills;
 mod tools;
 
-pub use agent::{format_skills_prompt, run_agent, Error};
+pub use agent::{format_skills_prompt, run_agent, run_agent_with_observer, Error};
 pub use fs_tools::{
     register_workspace_fs_tools, MAX_READ_FILE_BYTES, MAX_WRITE_FILE_BYTES,
 };
 pub use llm::{AssistantTurn, Llm, LlmError, OpenAiCompatibleLlm, RetryingLlm};
+pub use observe::{AgentObserver, NoopObserver, StderrObserver};
 pub use skills::{load_skills, Error as SkillsError};
 pub use tools::{Tool, ToolError, ToolRegistry};
 
 pub use api::aiagentkit::v1::{
-    AgentTurn, DirEntry, DirListing, FileContent, ListDir, LoadSkills, Message,
-    OpenAiCompatibleLlmConfig, ReadFile, RetryPolicy, Role, RunAgent, SkillBundle, SkillFile,
-    ToolCall, ToolSpec, WriteFile, WriteFileResult,
+    AgentLlmStep, AgentToolCall, AgentToolResult, AgentTurn, DirEntry, DirListing, FileContent,
+    ListDir, LoadSkills, Message, OpenAiCompatibleLlmConfig, ReadFile, RetryPolicy, Role, RunAgent,
+    SkillBundle, SkillFile, ToolCall, ToolSpec, WriteFile, WriteFileResult,
 };
 /// Zero-copy buffa views (for decode-from-bytes paths).
 pub use api::aiagentkit::v1::view::{
-    AgentTurnOwnedView, AgentTurnView, DirEntryOwnedView, DirEntryView, DirListingOwnedView,
-    DirListingView, FileContentOwnedView, FileContentView, ListDirOwnedView, ListDirView,
-    LoadSkillsOwnedView, LoadSkillsView, MessageOwnedView, MessageView,
-    OpenAiCompatibleLlmConfigOwnedView, OpenAiCompatibleLlmConfigView, ReadFileOwnedView,
-    ReadFileView, RetryPolicyOwnedView, RetryPolicyView, RunAgentOwnedView, RunAgentView,
-    SkillBundleOwnedView, SkillBundleView, SkillFileOwnedView, SkillFileView, ToolCallOwnedView,
-    ToolCallView, ToolSpecOwnedView, ToolSpecView, WriteFileOwnedView, WriteFileResultOwnedView,
-    WriteFileResultView, WriteFileView,
+    AgentLlmStepOwnedView, AgentLlmStepView, AgentToolCallOwnedView, AgentToolCallView,
+    AgentToolResultOwnedView, AgentToolResultView, AgentTurnOwnedView, AgentTurnView,
+    DirEntryOwnedView, DirEntryView, DirListingOwnedView, DirListingView, FileContentOwnedView,
+    FileContentView, ListDirOwnedView, ListDirView, LoadSkillsOwnedView, LoadSkillsView,
+    MessageOwnedView, MessageView, OpenAiCompatibleLlmConfigOwnedView,
+    OpenAiCompatibleLlmConfigView, ReadFileOwnedView, ReadFileView, RetryPolicyOwnedView,
+    RetryPolicyView, RunAgentOwnedView, RunAgentView, SkillBundleOwnedView, SkillBundleView,
+    SkillFileOwnedView, SkillFileView, ToolCallOwnedView, ToolCallView, ToolSpecOwnedView,
+    ToolSpecView, WriteFileOwnedView, WriteFileResultOwnedView, WriteFileResultView, WriteFileView,
 };

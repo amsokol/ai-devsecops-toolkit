@@ -71,3 +71,38 @@ message AgentTurn {
   // Number of LLM completion calls performed.
   uint32 steps = 3;
 }
+
+// AgentLlmStep is emitted after each LLM completion within the agent loop.
+message AgentLlmStep {
+  // 1-based step index (LLM round).
+  uint32 step = 1 [(buf.validate.field).uint32.gte = 1];
+  // Number of tool calls requested in this completion.
+  uint32 tool_call_count = 2;
+  // Assistant text content when present (may be empty for pure tool-call turns).
+  string content = 3;
+}
+
+// AgentToolCall is emitted before executing a tool.
+message AgentToolCall {
+  uint32 step = 1 [(buf.validate.field).uint32.gte = 1];
+  string tool_call_id = 2;
+  string tool_name = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  string arguments_json = 4;
+}
+
+// AgentToolResult is emitted after a tool returns (ok or error text).
+message AgentToolResult {
+  uint32 step = 1 [(buf.validate.field).uint32.gte = 1];
+  string tool_call_id = 2;
+  string tool_name = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // True when ToolRegistry returned Ok.
+  bool ok = 4;
+  // Tool stdout JSON or error string.
+  string output = 5;
+}
