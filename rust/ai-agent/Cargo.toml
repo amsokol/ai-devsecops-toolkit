@@ -1,0 +1,16 @@
+[package]
+name = "ai-agent"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Thin CLI for ai-agent-kit (skills + workspace FS tools + LLM loop)"
+
+[[bin]]
+name = "ai-agent"
+path = "src/main.rs"
+
+[dependencies]
+ai-agent-kit = { path = "../ai-agent-kit" }
+clap = { workspace = true }
+tokio = { workspace = true }

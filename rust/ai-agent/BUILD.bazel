@@ -1,0 +1,15 @@
+load("@crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+rust_binary(
+    name = "ai_agent",
+    srcs = ["src/main.rs"],
+    aliases = aliases(),
+    crate_name = "ai_agent",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//rust/ai-agent-kit:ai_agent_kit",
+    ] + all_crate_deps(
+        normal = True,
+    ),
+)

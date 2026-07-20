@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "rust/api",
     "rust/ai-agent-kit",
+    "rust/ai-agent",
 ]
 
 [workspace.package]
@@ -18,9 +19,10 @@ buffa = { version = "=0.8.1", default-features = false, features = [
     "fast-utf8",
     "json",
 ] }
-reqwest = { version = "0.12.28", default-features = false, features = [
+clap = { version = "4.5.60", features = ["derive", "env"] }
+reqwest = { version = "0.13.4", default-features = false, features = [
     "json",
-    "rustls-tls",
+    "rustls",
 ] }
 serde = { version = "1.0.229", default-features = false, features = [
     "derive",
