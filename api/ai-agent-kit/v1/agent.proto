@@ -1,0 +1,73 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// Role of a chat message in an agent turn.
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_SYSTEM = 1;
+  ROLE_USER = 2;
+  ROLE_ASSISTANT = 3;
+  ROLE_TOOL = 4;
+}
+
+// ToolCall is one function invocation requested by the model.
+message ToolCall {
+  // Provider-assigned call id (OpenAI-compatible `tool_calls[].id`).
+  string id = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Tool / function name.
+  string name = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Raw JSON arguments string from the model.
+  string arguments_json = 3 [(buf.validate.field).required = true];
+}
+
+// Message is one turn in the agent conversation.
+message Message {
+  Role role = 1 [(buf.validate.field).enum = {defined_only: true, not_in: [0]}];
+  // Text content (system/user/assistant text, or tool result body).
+  string content = 2;
+  // Assistant-requested tool calls (role == ASSISTANT).
+  repeated ToolCall tool_calls = 3;
+  // Id of the tool call this message answers (role == TOOL).
+  string tool_call_id = 4;
+  // Optional tool name for tool-role messages.
+  string name = 5;
+}
+
+// RunAgent is the input for [`run_agent`].
+message RunAgent {
+  // Workspace root that contains `.skills/` (used when skill_id is set).
+  string workspace_root = 1;
+  // Optional skill id; loaded via load_skills and prepended to the system prompt.
+  string skill_id = 2;
+  // Extra / override system prompt text (appended after skill markdown when both set).
+  string system_prompt = 3;
+  // Required user message that starts the agent turn.
+  string user_message = 4 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Max LLM ↔ tool iterations (must be set by the caller; 0 is invalid).
+  uint32 max_steps = 5 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+}
+
+// AgentTurn is the result of a completed [`run_agent`] run.
+message AgentTurn {
+  // Full conversation after the run (including tool messages).
+  repeated Message messages = 1;
+  // Final assistant text (empty if the model ended on tool calls at max_steps).
+  string final_text = 2;
+  // Number of LLM completion calls performed.
+  uint32 steps = 3;
+}

@@ -1,0 +1,43 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// OpenAiCompatibleLlmConfig configures an OpenAI Chat Completions client.
+// All fields are supplied by the caller (no kit-side defaults).
+message OpenAiCompatibleLlmConfig {
+  // API base URL including `/v1` (e.g. `https://integrate.api.nvidia.com/v1`).
+  string base_url = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.uri = true
+  ];
+  // Bearer API key (sensitive; do not log).
+  string api_key = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Model id as expected by the provider (e.g. `z-ai/glm-5.2`).
+  string model = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+}
+
+// RetryPolicy controls HTTP retries for retriable LLM errors within one agent step.
+message RetryPolicy {
+  // Total attempts including the first (must be >= 1).
+  uint32 max_attempts = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+  // Backoff before the second attempt, in milliseconds.
+  uint32 initial_backoff_ms = 2 [
+    (buf.validate.field).required = true
+  ];
+  // Cap for exponential backoff, in milliseconds.
+  uint32 max_backoff_ms = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).uint32.gte = 1
+  ];
+}

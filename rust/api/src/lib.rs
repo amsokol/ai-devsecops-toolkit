@@ -7,7 +7,12 @@
 //! Call sites: `api::aiagentkit::v1::{...}`.
 
 #![allow(clippy::all)]
-#![allow(dead_code, unused_imports, unused_qualifications)]
+#![allow(
+    dead_code,
+    unused_imports,
+    unused_qualifications,
+    non_camel_case_types
+)]
 
 /// Buffa-generated message types (`crate::buffa::aiagentkit::v1`).
 pub mod buffa {

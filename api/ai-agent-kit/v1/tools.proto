@@ -1,0 +1,21 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// ToolSpec is an OpenAI-compatible function tool definition.
+message ToolSpec {
+  // Tool / function name.
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Human-readable description for the model.
+  string description = 2;
+  // JSON Schema for `parameters` (object schema as a JSON string).
+  string parameters_json = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+}
