@@ -212,10 +212,29 @@ impl OpenAiCompatibleLlm {
         messages: &[Message],
         tools: &[ToolSpec],
     ) -> Result<AssistantTurn, LlmError> {
-        let base = self.config.base_url.as_deref().unwrap().trim_end_matches('/');
+        let base = self
+            .config
+            .base_url
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or(LlmError::InvalidConfig("base_url is required"))?
+            .trim_end_matches('/');
         let url = format!("{base}/chat/completions");
-        let model = self.config.model.as_deref().unwrap();
-        let api_key = self.config.api_key.as_deref().unwrap();
+        let model = self
+            .config
+            .model
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or(LlmError::InvalidConfig("model is required"))?;
+        let api_key = self
+            .config
+            .api_key
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .ok_or(LlmError::InvalidConfig("api_key is required"))?;
 
         let mut body = json!({
             "model": model,

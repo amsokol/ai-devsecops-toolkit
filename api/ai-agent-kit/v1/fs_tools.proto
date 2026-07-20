@@ -1,0 +1,56 @@
+edition = "2024";
+
+package aiagentkit.v1;
+
+import "buf/validate/validate.proto";
+
+// ReadFile is the input for the `read_file` tool.
+message ReadFile {
+  // Path relative to the workspace root (no absolute paths, no `..` escape).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+}
+
+// FileContent is the result of `read_file`.
+message FileContent {
+  // Path that was read (as requested).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // UTF-8 file contents.
+  string content = 2 [(buf.validate.field).required = true];
+}
+
+// ListDir is the input for the `list_dir` tool (non-recursive).
+message ListDir {
+  // Directory path relative to the workspace root (`"."` = workspace root).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+}
+
+// DirEntry is one name inside a directory listing.
+message DirEntry {
+  // Entry name (not a full path).
+  string name = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // True if the entry is a directory.
+  bool is_dir = 2;
+}
+
+// DirListing is the result of `list_dir`.
+message DirListing {
+  // Directory that was listed (as requested).
+  string path = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Entries sorted by name.
+  repeated DirEntry entries = 2;
+}

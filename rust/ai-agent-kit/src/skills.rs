@@ -143,7 +143,8 @@ mod tests {
 
     #[test]
     fn empty_skill_id_errors() {
-        let err = load_skills(&params("/tmp", "  ")).unwrap_err();
+        let dir = tempfile::tempdir().unwrap();
+        let err = load_skills(&params(dir.path().to_string_lossy(), "  ")).unwrap_err();
         assert!(matches!(err, Error::MissingSkillId));
     }
 }
