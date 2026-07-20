@@ -3,6 +3,7 @@ edition = "2024";
 package depbot.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/duration.proto";
 
 // ToolsFile is the on-disk tools configuration (`.depbot/tools.yaml`).
 // Load path: YAML → JSON → this message (validate shape via protobuf/serde).
@@ -22,15 +23,16 @@ message ToolsFile {
 message ShellSection {
   // Allowed program basenames (e.g. `git`, `npm`). Empty = deny all programs.
   repeated string allowed_programs = 1;
-  // Default timeout in milliseconds when the model omits timeout_ms.
-  uint32 default_timeout_ms = 2 [
+  // Default timeout when the model omits `timeout` (must be > 0).
+  // YAML/JSON: proto Duration string, e.g. `"60s"`.
+  google.protobuf.Duration default_timeout = 2 [
     (buf.validate.field).required = true,
-    (buf.validate.field).uint32.gte = 1
+    (buf.validate.field).duration.gt = {seconds: 0}
   ];
-  // Hard cap for timeouts.
-  uint32 max_timeout_ms = 3 [
+  // Hard cap for timeouts (must be > 0).
+  google.protobuf.Duration max_timeout = 3 [
     (buf.validate.field).required = true,
-    (buf.validate.field).uint32.gte = 1
+    (buf.validate.field).duration.gt = {seconds: 0}
   ];
   // Max captured stdout+stderr bytes combined.
   uint64 max_output_bytes = 4 [

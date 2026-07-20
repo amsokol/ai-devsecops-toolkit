@@ -3,6 +3,8 @@
 //! Builds protobuf configs from flags/env, registers workspace FS tools, runs the agent.
 //!
 //! Shell allowlists come from `.depbot/tools.yaml` (`depbot.v1.ToolsFile`: YAML → JSON → proto).
+//! With `--skill depbot`, a deterministic doctor runs first (manifests ∩ allowlist ∩ PATH)
+//! and exits before the LLM if required tools are missing.
 //! The API key itself is never a CLI flag (Cargo echoes argv). Pass the *name* of an
 //! env var via `--api-key-env-var`.
 //!
@@ -25,7 +27,10 @@ use ai_agent_kit::{
     RetryingLlm, RunAgent, StderrObserver, ToolRegistry,
 };
 use clap::Parser;
-use depbot::{load_tools_file, shell_tool_config_from_tools_file, DEFAULT_TOOLS_CONFIG};
+use depbot::{
+    format_doctor_context, format_doctor_failure, load_tools_file, run_doctor,
+    shell_tool_config_from_tools_file, DEFAULT_TOOLS_CONFIG,
+};
 
 #[derive(Parser)]
 #[command(
@@ -175,22 +180,53 @@ async fn run() -> Result<(), String> {
     let llm = OpenAiCompatibleLlm::new(llm_config).map_err(|e| e.to_string())?;
     let llm = RetryingLlm::new(llm, retry).map_err(|e| e.to_string())?;
 
+    let skill_id = args
+        .skill
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty());
+    let skill_is_depbot = skill_id == Some("depbot");
+    let need_tools_file = !args.no_shell_tool || skill_is_depbot;
+
+    let tools_file = if need_tools_file {
+        let tools_path = match &args.tools_config {
+            Some(p) => p.clone(),
+            None => workspace.join(DEFAULT_TOOLS_CONFIG),
+        };
+        Some(load_tools_file(&tools_path).map_err(|e| {
+            format!(
+                "tools config {}: {e} (create {DEFAULT_TOOLS_CONFIG} or pass --tools-config)",
+                tools_path.display()
+            )
+        })?)
+    } else {
+        None
+    };
+
+    // Depbot preflight is deterministic code (not LLM): manifests ∩ allowlist ∩ PATH.
+    // On success, inject the report into the system prompt so the model skips
+    // rediscovering absent root manifests.
+    let mut doctor_system: Option<String> = None;
+    if skill_is_depbot {
+        let tools_file = tools_file.as_ref().ok_or_else(|| {
+            format!("depbot doctor requires {DEFAULT_TOOLS_CONFIG} (or --tools-config)")
+        })?;
+        let report = run_doctor(&workspace, tools_file).map_err(|e| e.to_string())?;
+        if report.ok != Some(true) {
+            return Err(format_doctor_failure(&report));
+        }
+        doctor_system = Some(format_doctor_context(&report));
+    }
+
     let mut tools = ToolRegistry::new();
     if !args.no_fs_tools {
         register_workspace_fs_tools(&mut tools, &workspace);
     }
     if !args.no_shell_tool {
-        let tools_path = match &args.tools_config {
-            Some(p) => p.clone(),
-            None => workspace.join(DEFAULT_TOOLS_CONFIG),
-        };
-        let tools_file = load_tools_file(&tools_path).map_err(|e| {
-            format!(
-                "tools config {}: {e} (create {DEFAULT_TOOLS_CONFIG} or pass --tools-config)",
-                tools_path.display()
-            )
+        let tools_file = tools_file.as_ref().ok_or_else(|| {
+            format!("shell tool requires {DEFAULT_TOOLS_CONFIG} (or --tools-config)")
         })?;
-        let shell_cfg = shell_tool_config_from_tools_file(&tools_file, workspace.to_string_lossy())
+        let shell_cfg = shell_tool_config_from_tools_file(tools_file, workspace.to_string_lossy())
             .map_err(|e| e.to_string())?;
         register_workspace_shell_tool(&mut tools, shell_cfg).map_err(|e| e.to_string())?;
     }
@@ -200,8 +236,13 @@ async fn run() -> Result<(), String> {
         .with_user_message(args.message.trim())
         .with_max_steps(args.max_steps);
 
-    if let Some(skill) = args.skill.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+    if let Some(skill) = skill_id {
         params = params.with_skill_id(skill);
+    }
+
+    let mut system_parts: Vec<String> = Vec::new();
+    if let Some(ctx) = doctor_system {
+        system_parts.push(ctx);
     }
     if let Some(system) = args
         .system_prompt
@@ -209,7 +250,10 @@ async fn run() -> Result<(), String> {
         .map(str::trim)
         .filter(|s| !s.is_empty())
     {
-        params = params.with_system_prompt(system);
+        system_parts.push(system.to_owned());
+    }
+    if !system_parts.is_empty() {
+        params = params.with_system_prompt(system_parts.join("\n\n"));
     }
 
     let turn = if args.verbose {

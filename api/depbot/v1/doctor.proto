@@ -1,0 +1,47 @@
+edition = "2024";
+
+package depbot.v1;
+
+import "buf/validate/validate.proto";
+
+// EcosystemNeed is one detected package ecosystem and the programs it requires.
+message EcosystemNeed {
+  // Short id: `go`, `npm`, `cargo`, `bazel`, `buf`.
+  string ecosystem = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Manifest (or related file) that triggered this need, relative to workspace.
+  string evidence_path = 2 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Programs required for scanning/updating this ecosystem (basenames).
+  repeated string required_programs = 3;
+}
+
+// DoctorIssue is one blocking problem found by preflight.
+message DoctorIssue {
+  // Program basename that is missing or not allowlisted.
+  string program = 1 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+  // Why it is required (ecosystem id).
+  string ecosystem = 2;
+  // Human-readable reason.
+  string message = 3 [
+    (buf.validate.field).required = true,
+    (buf.validate.field).string.min_len = 1
+  ];
+}
+
+// DoctorReport is the result of deterministic preflight before the agent loop.
+message DoctorReport {
+  // Ecosystems detected under the workspace root.
+  repeated EcosystemNeed needs = 1;
+  // Blocking issues (missing on PATH and/or not in tools.yaml allowlist).
+  repeated DoctorIssue issues = 2;
+  // True when there are no blocking issues.
+  bool ok = 3;
+}

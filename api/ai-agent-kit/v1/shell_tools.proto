@@ -3,6 +3,7 @@ edition = "2024";
 package aiagentkit.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/duration.proto";
 
 // ShellToolConfig configures the workspace `run_command` tool (caller-supplied; no kit defaults).
 message ShellToolConfig {
@@ -14,15 +15,15 @@ message ShellToolConfig {
   // Allowed program basenames only (e.g. `go`, `git`). Empty = deny all.
   // Absolute paths and path separators in `RunCommand.program` are rejected.
   repeated string allowed_programs = 2;
-  // Default timeout when `RunCommand.timeout_ms` is unset (must be >= 1).
-  uint32 default_timeout_ms = 3 [
+  // Default timeout when `RunCommand.timeout` is unset (must be > 0).
+  google.protobuf.Duration default_timeout = 3 [
     (buf.validate.field).required = true,
-    (buf.validate.field).uint32.gte = 1
+    (buf.validate.field).duration.gt = {seconds: 0}
   ];
-  // Hard cap for timeouts (must be >= 1).
-  uint32 max_timeout_ms = 4 [
+  // Hard cap for timeouts (must be > 0).
+  google.protobuf.Duration max_timeout = 4 [
     (buf.validate.field).required = true,
-    (buf.validate.field).uint32.gte = 1
+    (buf.validate.field).duration.gt = {seconds: 0}
   ];
   // Max captured stdout+stderr bytes combined (must be >= 1).
   uint64 max_output_bytes = 5 [
@@ -45,8 +46,8 @@ message RunCommand {
   repeated string args = 2;
   // Working directory relative to the workspace root (`"."` = workspace root).
   string cwd = 3;
-  // Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
-  uint32 timeout_ms = 4;
+  // Optional timeout (capped by ShellToolConfig.max_timeout). Proto JSON: `"30s"`.
+  google.protobuf.Duration timeout = 4;
 }
 
 // CommandResult is the result of `run_command`.
@@ -61,8 +62,8 @@ message CommandResult {
   bool timed_out = 4;
   // True if stdout and/or stderr were truncated to the configured byte limit.
   bool truncated = 5;
-  // Wall time spent waiting for the process, in milliseconds.
-  uint64 duration_ms = 6;
+  // Wall time spent waiting for the process.
+  google.protobuf.Duration duration = 6;
   // Program basename that was executed.
   string program = 7;
   // Resolved working directory as requested (relative).

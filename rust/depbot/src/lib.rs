@@ -15,9 +15,13 @@
 )]
 
 mod config;
+mod doctor;
 
 pub use config::{
     load_tools_file, shell_tool_config_from_tools_file, Error as ConfigError, DEFAULT_TOOLS_CONFIG,
 };
+pub use doctor::{format_doctor_context, format_doctor_failure, program_on_path, run_doctor};
 
-pub use api::depbot::v1::{CurlSection, ShellSection, ToolsFile};
+pub use api::depbot::v1::{
+    CurlSection, DoctorIssue, DoctorReport, EcosystemNeed, ShellSection, ToolsFile,
+};

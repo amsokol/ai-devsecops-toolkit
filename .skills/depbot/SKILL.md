@@ -21,7 +21,9 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
 
 ## Default workflow
 
-1. **Discover** ecosystems present (`go.mod`, `package.json`, Cargo.toml, `MODULE.bazel`, `buf.yaml`, etc.).
+1. **Discover** ecosystems — prefer the **Depbot doctor** block in the system prompt when present
+   (root manifests already scanned). Do not re-probe absent root files (`go.mod`, `package.json`, …).
+   Open listed evidence files only when you need their contents; dig into nested trees only if relevant.
 2. **Comment pass** — find and interpret dependency-related comments (`dep-comments.md`).
    Treat `depbot:` markers and nearby human notes as policy (holds, unlock conditions, target versions).
    This is mandatory and is what Renovate does not do well.
@@ -48,6 +50,9 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
 - Prefer one logical change-set per PR; do not mix refactors with dependency bumps.
 - If verification fails, stop and report — do not force-push “green” by skipping tests.
 - Restrict `curl` to dependency-registry URLs documented in skills; no arbitrary downloads.
+- Toolchain pins (Rust in `rust.MODULE.bazel`, language/`buf.toolchains`, etc.) are **report-only**
+  by default: include them in scan/plan output, but do **not** bump unless the user explicitly asks
+  or a `depbot:` unlock comment allows it. Prefer soft judgment over Renovate-style auto-bumps.
 
 ## Communication
 

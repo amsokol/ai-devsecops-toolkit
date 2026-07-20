@@ -8,6 +8,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use api::aiagentkit::v1::{CommandResult, RunCommand, ShellToolConfig, ToolSpec};
+use buffa_types::google::protobuf::Duration as ProtoDuration;
 
 use crate::fs_tools::resolve_under_root;
 use crate::tools::{Tool, ToolError, ToolRegistry};
@@ -28,9 +29,9 @@ const RUN_COMMAND_PARAMS: &str = r#"{
       "type": "string",
       "description": "Working directory relative to the workspace root (\".\" = workspace root)"
     },
-    "timeout_ms": {
-      "type": "integer",
-      "description": "Optional timeout in milliseconds (capped by tool config)"
+    "timeout": {
+      "type": "string",
+      "description": "Optional timeout as protobuf Duration JSON (e.g. \"30s\", \"0.2s\"); capped by tool config"
     }
   },
   "required": ["program"],
@@ -54,8 +55,8 @@ struct RunCommandTool {
     workspace_root: PathBuf,
     allowlist: HashSet<String>,
     curl_url_prefixes: Vec<String>,
-    default_timeout_ms: u32,
-    max_timeout_ms: u32,
+    default_timeout: Duration,
+    max_timeout: Duration,
     max_output_bytes: u64,
 }
 
@@ -77,28 +78,24 @@ impl RunCommandTool {
                 message: format!("canonicalize workspace_root: {e}"),
             })?;
 
-        let default_timeout_ms = match config.default_timeout_ms {
-            Some(n) if n >= 1 => n,
-            _ => {
-                return Err(ToolError::Failed {
-                    name: "run_command".into(),
-                    message: "ShellToolConfig.default_timeout_ms must be >= 1".into(),
-                });
-            }
-        };
-        let max_timeout_ms = match config.max_timeout_ms {
-            Some(n) if n >= 1 => n,
-            _ => {
-                return Err(ToolError::Failed {
-                    name: "run_command".into(),
-                    message: "ShellToolConfig.max_timeout_ms must be >= 1".into(),
-                });
-            }
-        };
-        if default_timeout_ms > max_timeout_ms {
+        let default_timeout = require_positive_timeout(
+            config.default_timeout.as_option().ok_or_else(|| ToolError::Failed {
+                name: "run_command".into(),
+                message: "ShellToolConfig.default_timeout is required".into(),
+            })?,
+            "ShellToolConfig.default_timeout",
+        )?;
+        let max_timeout = require_positive_timeout(
+            config.max_timeout.as_option().ok_or_else(|| ToolError::Failed {
+                name: "run_command".into(),
+                message: "ShellToolConfig.max_timeout is required".into(),
+            })?,
+            "ShellToolConfig.max_timeout",
+        )?;
+        if default_timeout > max_timeout {
             return Err(ToolError::Failed {
                 name: "run_command".into(),
-                message: "ShellToolConfig.default_timeout_ms must be <= max_timeout_ms".into(),
+                message: "ShellToolConfig.default_timeout must be <= max_timeout".into(),
             });
         }
         let max_output_bytes = match config.max_output_bytes {
@@ -149,8 +146,8 @@ impl RunCommandTool {
             workspace_root,
             allowlist,
             curl_url_prefixes,
-            default_timeout_ms,
-            max_timeout_ms,
+            default_timeout,
+            max_timeout,
             max_output_bytes,
         })
     }
@@ -254,15 +251,21 @@ impl Tool for RunCommandTool {
             });
         }
 
-        let timeout_ms = match input.timeout_ms {
-            Some(n) if n >= 1 => n.min(self.max_timeout_ms),
-            Some(_) => {
-                return Err(ToolError::Failed {
+        let timeout = match input.timeout.as_option() {
+            Some(proto) => {
+                let requested = Duration::try_from(proto.clone()).map_err(|e| ToolError::Failed {
                     name: "run_command".into(),
-                    message: "timeout_ms must be >= 1 when set".into(),
-                });
+                    message: format!("timeout: {e}"),
+                })?;
+                if requested.is_zero() {
+                    return Err(ToolError::Failed {
+                        name: "run_command".into(),
+                        message: "timeout must be > 0 when set".into(),
+                    });
+                }
+                requested.min(self.max_timeout)
             }
-            None => self.default_timeout_ms,
+            None => self.default_timeout,
         };
 
         let started = Instant::now();
@@ -283,7 +286,6 @@ impl Tool for RunCommandTool {
         let stdout_handle = thread::spawn(move || read_pipe(stdout_pipe));
         let stderr_handle = thread::spawn(move || read_pipe(stderr_pipe));
 
-        let timeout = Duration::from_millis(u64::from(timeout_ms));
         let mut timed_out = false;
         let exit_code = loop {
             match child.try_wait() {
@@ -311,26 +313,40 @@ impl Tool for RunCommandTool {
 
         let stdout_raw = join_bytes(stdout_handle).unwrap_or_default();
         let stderr_raw = join_bytes(stderr_handle).unwrap_or_default();
-        let duration_ms = started.elapsed().as_millis() as u64;
+        let elapsed = started.elapsed();
 
         let (stdout, stderr, truncated) =
             truncate_outputs(&stdout_raw, &stderr_raw, self.max_output_bytes);
 
-        let result = CommandResult::default()
+        let mut result = CommandResult::default()
             .with_exit_code(exit_code)
             .with_stdout(stdout)
             .with_stderr(stderr)
             .with_timed_out(timed_out)
             .with_truncated(truncated)
-            .with_duration_ms(duration_ms)
             .with_program(program)
             .with_cwd(cwd_rel);
+        result.duration = ProtoDuration::from(elapsed).into();
 
         serde_json::to_string(&result).map_err(|e| ToolError::Failed {
             name: "run_command".into(),
             message: format!("serialize result: {e}"),
         })
     }
+}
+
+fn require_positive_timeout(proto: &ProtoDuration, label: &str) -> Result<Duration, ToolError> {
+    let d = Duration::try_from(proto.clone()).map_err(|e| ToolError::Failed {
+        name: "run_command".into(),
+        message: format!("{label}: {e}"),
+    })?;
+    if d.is_zero() {
+        return Err(ToolError::Failed {
+            name: "run_command".into(),
+            message: format!("{label} must be > 0"),
+        });
+    }
+    Ok(d)
 }
 
 fn is_safe_program_basename(name: &str) -> bool {
@@ -458,9 +474,9 @@ mod tests {
     fn cfg_for(dir: &Path, allow: &[&str]) -> ShellToolConfig {
         let mut cfg = ShellToolConfig::default()
             .with_workspace_root(dir.to_string_lossy())
-            .with_default_timeout_ms(5_000)
-            .with_max_timeout_ms(10_000)
             .with_max_output_bytes(64 * 1024);
+        cfg.default_timeout = ProtoDuration::from(Duration::from_secs(5)).into();
+        cfg.max_timeout = ProtoDuration::from(Duration::from_secs(10)).into();
         cfg.allowed_programs = allow.iter().map(|s| (*s).to_owned()).collect();
         cfg
     }
@@ -611,14 +627,15 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let mut reg = ToolRegistry::new();
         let mut cfg = cfg_for(dir.path(), &["sleep"]);
-        cfg = cfg.with_default_timeout_ms(200).with_max_timeout_ms(1_000);
+        cfg.default_timeout = ProtoDuration::from(Duration::from_millis(200)).into();
+        cfg.max_timeout = ProtoDuration::from(Duration::from_secs(1)).into();
         // sleep may not exist on Windows; skip if spawn fails for missing binary.
         if register_workspace_shell_tool(&mut reg, cfg).is_err() {
             return;
         }
         match reg.call(
             "run_command",
-            r#"{"program":"sleep","args":["5"],"timeout_ms":200}"#,
+            r#"{"program":"sleep","args":["5"],"timeout":"0.2s"}"#,
         ) {
             Ok(out) => {
                 let parsed: CommandResult = serde_json::from_str(&out).unwrap();

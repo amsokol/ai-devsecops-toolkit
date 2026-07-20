@@ -60,11 +60,11 @@ BCR `metadata.json` remains the source of truth for “is there a newer module v
 
 Examples that are **not** solved by BCR module metadata alone:
 
-| Pin | Where | How to check |
-|-----|--------|--------------|
-| Buf CLI `buf.toolchains(version=…)` | `MODULE.bazel` | rules_buf / Buf release notes; keep sha256 in sync when version changes |
-| BSR plugins (`buf.build/anthropics/buffa:v…`) | `buf.gen.*.yaml` | BSR + match workspace `buffa` crate pin |
-| Rust toolchain version | `rust.MODULE.bazel` | usually tied to workspace `rust-version`; do not bump casually |
+| Pin                                           | Where               | How to check                                                                                             |
+| --------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- |
+| Buf CLI `buf.toolchains(version=…)`           | `MODULE.bazel`      | rules_buf / Buf release notes; keep sha256 in sync when version changes                                  |
+| BSR plugins (`buf.build/anthropics/buffa:v…`) | `buf.gen.*.yaml`    | BSR + match workspace `buffa` crate pin                                                                  |
+| Rust toolchain version                        | `rust.MODULE.bazel` | report in plan; bump only on explicit ask or `depbot:` unlock (usually tied to workspace `rust-version`) |
 
 When Cargo `buffa` and BSR `anthropics/buffa` must move together, say so explicitly and follow dependency comments.
 
@@ -74,9 +74,9 @@ In dry-run / plan output include:
 
 ```markdown
 ## Bazel (bzlmod) vs BCR
-| Module | Pinned | BCR latest (non-yanked) | Action |
-|--------|--------|-------------------------|--------|
-| rules_rust | 0.71.3 | … | bump / hold / blocked by comment |
+| Module     | Pinned | BCR latest (non-yanked) | Action                           |
+| ---------- | ------ | ----------------------- | -------------------------------- |
+| rules_rust | 0.71.3 | …                       | bump / hold / blocked by comment |
 ```
 
 Cite BCR ([registry.bazel.build](https://registry.bazel.build/)) as the check source — never “no scanner available”.

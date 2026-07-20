@@ -2,9 +2,11 @@
 
 use std::fs;
 use std::path::Path;
+use std::time::Duration;
 
 use api::aiagentkit::v1::ShellToolConfig;
 use api::depbot::v1::ToolsFile;
+use buffa_types::google::protobuf::Duration as ProtoDuration;
 
 /// Default relative path under a workspace root.
 pub const DEFAULT_TOOLS_CONFIG: &str = ".depbot/tools.yaml";
@@ -58,29 +60,28 @@ fn validate_tools_file(file: &ToolsFile) -> Result<(), Error> {
         None => return Err(Error::Invalid("ToolsFile.version is required".into())),
     }
 
-    let shell = file.shell.as_option().ok_or_else(|| {
-        Error::Invalid("ToolsFile.shell is required".into())
-    })?;
+    let shell = file
+        .shell
+        .as_option()
+        .ok_or_else(|| Error::Invalid("ToolsFile.shell is required".into()))?;
 
-    match shell.default_timeout_ms {
-        Some(n) if n >= 1 => {}
-        _ => {
-            return Err(Error::Invalid(
-                "ToolsFile.shell.default_timeout_ms must be >= 1".into(),
-            ));
-        }
-    }
-    match shell.max_timeout_ms {
-        Some(n) if n >= 1 => {}
-        _ => {
-            return Err(Error::Invalid(
-                "ToolsFile.shell.max_timeout_ms must be >= 1".into(),
-            ));
-        }
-    }
-    if shell.default_timeout_ms.unwrap_or(0) > shell.max_timeout_ms.unwrap_or(0) {
+    let default_timeout = require_positive_duration(
+        shell
+            .default_timeout
+            .as_option()
+            .ok_or_else(|| Error::Invalid("ToolsFile.shell.default_timeout is required".into()))?,
+        "default_timeout",
+    )?;
+    let max_timeout = require_positive_duration(
+        shell
+            .max_timeout
+            .as_option()
+            .ok_or_else(|| Error::Invalid("ToolsFile.shell.max_timeout is required".into()))?,
+        "max_timeout",
+    )?;
+    if default_timeout > max_timeout {
         return Err(Error::Invalid(
-            "ToolsFile.shell.default_timeout_ms must be <= max_timeout_ms".into(),
+            "ToolsFile.shell.default_timeout must be <= max_timeout".into(),
         ));
     }
     match shell.max_output_bytes {
@@ -120,21 +121,29 @@ pub fn shell_tool_config_from_tools_file(
         .as_option()
         .ok_or_else(|| Error::Invalid("ToolsFile.shell is required".into()))?;
 
-    let default_timeout_ms = shell.default_timeout_ms.ok_or_else(|| {
-        Error::Invalid("ToolsFile.shell.default_timeout_ms must be >= 1".into())
-    })?;
-    let max_timeout_ms = shell.max_timeout_ms.ok_or_else(|| {
-        Error::Invalid("ToolsFile.shell.max_timeout_ms must be >= 1".into())
-    })?;
+    let default_timeout = require_positive_duration(
+        shell
+            .default_timeout
+            .as_option()
+            .ok_or_else(|| Error::Invalid("ToolsFile.shell.default_timeout is required".into()))?,
+        "default_timeout",
+    )?;
+    let max_timeout = require_positive_duration(
+        shell
+            .max_timeout
+            .as_option()
+            .ok_or_else(|| Error::Invalid("ToolsFile.shell.max_timeout is required".into()))?,
+        "max_timeout",
+    )?;
     let max_output_bytes = shell.max_output_bytes.ok_or_else(|| {
         Error::Invalid("ToolsFile.shell.max_output_bytes must be >= 1".into())
     })?;
 
     let mut cfg = ShellToolConfig::default()
         .with_workspace_root(workspace_root)
-        .with_default_timeout_ms(default_timeout_ms)
-        .with_max_timeout_ms(max_timeout_ms)
         .with_max_output_bytes(max_output_bytes);
+    cfg.default_timeout = ProtoDuration::from(default_timeout).into();
+    cfg.max_timeout = ProtoDuration::from(max_timeout).into();
 
     cfg.allowed_programs = shell.allowed_programs.clone();
     if let Some(curl) = file.curl.as_option() {
@@ -147,6 +156,17 @@ pub fn shell_tool_config_from_tools_file(
     }
 
     Ok(cfg)
+}
+
+fn require_positive_duration(proto: &ProtoDuration, name: &str) -> Result<Duration, Error> {
+    let d = Duration::try_from(proto.clone())
+        .map_err(|e| Error::Invalid(format!("ToolsFile.shell.{name}: {e}")))?;
+    if d.is_zero() {
+        return Err(Error::Invalid(format!(
+            "ToolsFile.shell.{name} must be > 0"
+        )));
+    }
+    Ok(d)
 }
 
 #[cfg(test)]
@@ -167,8 +187,8 @@ mod tests {
 version: 1
 shell:
   allowed_programs: [git, curl]
-  default_timeout_ms: 1000
-  max_timeout_ms: 2000
+  default_timeout: "1s"
+  max_timeout: "2s"
   max_output_bytes: 4096
 curl:
   url_prefixes:
@@ -188,7 +208,9 @@ curl:
             cfg.curl_url_prefixes,
             vec!["https://registry.bazel.build/".to_owned()]
         );
-        assert_eq!(cfg.default_timeout_ms, Some(1000));
+        let default =
+            Duration::try_from(cfg.default_timeout.as_option().unwrap().clone()).unwrap();
+        assert_eq!(default, Duration::from_secs(1));
     }
 
     #[test]
@@ -201,8 +223,8 @@ curl:
 version: 1
 shell:
   allowed_programs: [curl]
-  default_timeout_ms: 1000
-  max_timeout_ms: 2000
+  default_timeout: "1s"
+  max_timeout: "2s"
   max_output_bytes: 4096
 curl:
   url_prefixes: ["http://evil.example/"]

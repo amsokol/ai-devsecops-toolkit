@@ -3442,26 +3442,26 @@ pub struct ShellToolConfig {
         deserialize_with = "::buffa::json_helpers::null_as_default"
     )]
     pub allowed_programs: ::buffa::alloc::vec::Vec<::buffa::alloc::string::String>,
-    /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+    /// Default timeout when `RunCommand.timeout` is unset (must be \> 0).
     ///
-    /// Field 3: `default_timeout_ms`
+    /// Field 3: `default_timeout`
     #[serde(
-        rename = "defaultTimeoutMs",
-        alias = "default_timeout_ms",
-        with = "::buffa::json_helpers::opt_uint32",
-        skip_serializing_if = "::core::option::Option::is_none"
+        rename = "defaultTimeout",
+        alias = "default_timeout",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub default_timeout_ms: ::core::option::Option<u32>,
-    /// Hard cap for timeouts (must be \>= 1).
+    pub default_timeout: ::buffa::MessageField<
+        ::buffa_types::google::protobuf::Duration,
+    >,
+    /// Hard cap for timeouts (must be \> 0).
     ///
-    /// Field 4: `max_timeout_ms`
+    /// Field 4: `max_timeout`
     #[serde(
-        rename = "maxTimeoutMs",
-        alias = "max_timeout_ms",
-        with = "::buffa::json_helpers::opt_uint32",
-        skip_serializing_if = "::core::option::Option::is_none"
+        rename = "maxTimeout",
+        alias = "max_timeout",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub max_timeout_ms: ::core::option::Option<u32>,
+    pub max_timeout: ::buffa::MessageField<::buffa_types::google::protobuf::Duration>,
     /// Max captured stdout+stderr bytes combined (must be \>= 1).
     ///
     /// Field 5: `max_output_bytes`
@@ -3492,8 +3492,8 @@ impl ::core::fmt::Debug for ShellToolConfig {
         f.debug_struct("ShellToolConfig")
             .field("workspace_root", &self.workspace_root)
             .field("allowed_programs", &self.allowed_programs)
-            .field("default_timeout_ms", &self.default_timeout_ms)
-            .field("max_timeout_ms", &self.max_timeout_ms)
+            .field("default_timeout", &self.default_timeout)
+            .field("max_timeout", &self.max_timeout)
             .field("max_output_bytes", &self.max_output_bytes)
             .field("curl_url_prefixes", &self.curl_url_prefixes)
             .finish()
@@ -3519,20 +3519,6 @@ impl ShellToolConfig {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::default_timeout_ms`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_default_timeout_ms(mut self, value: u32) -> Self {
-        self.default_timeout_ms = Some(value);
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::max_timeout_ms`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_max_timeout_ms(mut self, value: u32) -> Self {
-        self.max_timeout_ms = Some(value);
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
     ///Sets [`Self::max_output_bytes`] to `Some(value)`, consuming and returning `self`.
     pub fn with_max_output_bytes(mut self, value: u64) -> Self {
         self.max_output_bytes = Some(value);
@@ -3553,7 +3539,7 @@ impl ::buffa::Message for ShellToolConfig {
     /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
     /// compliant message will never overflow this type.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u32;
@@ -3563,11 +3549,21 @@ impl ::buffa::Message for ShellToolConfig {
         for v in &self.allowed_programs {
             size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
         }
-        if let Some(v) = self.default_timeout_ms {
-            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        if self.default_timeout.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.default_timeout.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                    + inner_size;
         }
-        if let Some(v) = self.max_timeout_ms {
-            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        if self.max_timeout.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.max_timeout.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                    + inner_size;
         }
         if let Some(v) = self.max_output_bytes {
             size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
@@ -3580,7 +3576,7 @@ impl ::buffa::Message for ShellToolConfig {
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::bytes::BufMut,
     ) {
         #[allow(unused_imports)]
@@ -3591,11 +3587,13 @@ impl ::buffa::Message for ShellToolConfig {
         for v in &self.allowed_programs {
             ::buffa::types::put_string_field(2u32, v, buf);
         }
-        if let Some(v) = self.default_timeout_ms {
-            ::buffa::types::put_uint32_field(3u32, v, buf);
+        if self.default_timeout.is_set() {
+            ::buffa::types::put_len_delimited_header(3u32, __cache.consume_next(), buf);
+            self.default_timeout.write_to(__cache, buf);
         }
-        if let Some(v) = self.max_timeout_ms {
-            ::buffa::types::put_uint32_field(4u32, v, buf);
+        if self.max_timeout.is_set() {
+            ::buffa::types::put_len_delimited_header(4u32, __cache.consume_next(), buf);
+            self.max_timeout.write_to(__cache, buf);
         }
         if let Some(v) = self.max_output_bytes {
             ::buffa::types::put_uint64_field(5u32, v, buf);
@@ -3638,20 +3636,24 @@ impl ::buffa::Message for ShellToolConfig {
             3u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
-                    ::buffa::encoding::WireType::Varint,
+                    ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                self.default_timeout_ms = ::core::option::Option::Some(
-                    ::buffa::types::decode_uint32(buf)?,
-                );
+                ::buffa::Message::merge_length_delimited(
+                    self.default_timeout.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
-                    ::buffa::encoding::WireType::Varint,
+                    ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                self.max_timeout_ms = ::core::option::Option::Some(
-                    ::buffa::types::decode_uint32(buf)?,
-                );
+                ::buffa::Message::merge_length_delimited(
+                    self.max_timeout.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             5u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -3679,8 +3681,8 @@ impl ::buffa::Message for ShellToolConfig {
     fn clear(&mut self) {
         self.workspace_root = ::core::option::Option::None;
         self.allowed_programs.clear();
-        self.default_timeout_ms = ::core::option::Option::None;
-        self.max_timeout_ms = ::core::option::Option::None;
+        self.default_timeout = ::buffa::MessageField::none();
+        self.max_timeout = ::buffa::MessageField::none();
         self.max_output_bytes = ::core::option::Option::None;
         self.curl_url_prefixes.clear();
         self.__buffa_unknown_fields.clear();
@@ -3739,16 +3741,14 @@ pub struct RunCommand {
     /// Field 3: `cwd`
     #[serde(rename = "cwd", skip_serializing_if = "::core::option::Option::is_none")]
     pub cwd: ::core::option::Option<::buffa::alloc::string::String>,
-    /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+    /// Optional timeout (capped by ShellToolConfig.max_timeout). Proto JSON: `"30s"`.
     ///
-    /// Field 4: `timeout_ms`
+    /// Field 4: `timeout`
     #[serde(
-        rename = "timeoutMs",
-        alias = "timeout_ms",
-        with = "::buffa::json_helpers::opt_uint32",
-        skip_serializing_if = "::core::option::Option::is_none"
+        rename = "timeout",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub timeout_ms: ::core::option::Option<u32>,
+    pub timeout: ::buffa::MessageField<::buffa_types::google::protobuf::Duration>,
     #[serde(skip)]
     #[doc(hidden)]
     pub __buffa_unknown_fields: ::buffa::UnknownFields,
@@ -3759,7 +3759,7 @@ impl ::core::fmt::Debug for RunCommand {
             .field("program", &self.program)
             .field("args", &self.args)
             .field("cwd", &self.cwd)
-            .field("timeout_ms", &self.timeout_ms)
+            .field("timeout", &self.timeout)
             .finish()
     }
 }
@@ -3788,13 +3788,6 @@ impl RunCommand {
         self.cwd = Some(value.into());
         self
     }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
-    ///Sets [`Self::timeout_ms`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_timeout_ms(mut self, value: u32) -> Self {
-        self.timeout_ms = Some(value);
-        self
-    }
 }
 ::buffa::impl_default_instance!(RunCommand);
 impl ::buffa::MessageName for RunCommand {
@@ -3810,7 +3803,7 @@ impl ::buffa::Message for RunCommand {
     /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
     /// compliant message will never overflow this type.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u32;
@@ -3823,15 +3816,20 @@ impl ::buffa::Message for RunCommand {
         if let Some(ref v) = self.cwd {
             size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
         }
-        if let Some(v) = self.timeout_ms {
-            size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+        if self.timeout.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.timeout.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                    + inner_size;
         }
         size += self.__buffa_unknown_fields.encoded_len() as u32;
         size
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::bytes::BufMut,
     ) {
         #[allow(unused_imports)]
@@ -3845,8 +3843,9 @@ impl ::buffa::Message for RunCommand {
         if let Some(ref v) = self.cwd {
             ::buffa::types::put_string_field(3u32, v, buf);
         }
-        if let Some(v) = self.timeout_ms {
-            ::buffa::types::put_uint32_field(4u32, v, buf);
+        if self.timeout.is_set() {
+            ::buffa::types::put_len_delimited_header(4u32, __cache.consume_next(), buf);
+            self.timeout.write_to(__cache, buf);
         }
         self.__buffa_unknown_fields.write_to(buf);
     }
@@ -3891,11 +3890,13 @@ impl ::buffa::Message for RunCommand {
             4u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
-                    ::buffa::encoding::WireType::Varint,
+                    ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                self.timeout_ms = ::core::option::Option::Some(
-                    ::buffa::types::decode_uint32(buf)?,
-                );
+                ::buffa::Message::merge_length_delimited(
+                    self.timeout.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             _ => {
                 self.__buffa_unknown_fields
@@ -3908,7 +3909,7 @@ impl ::buffa::Message for RunCommand {
         self.program = ::core::option::Option::None;
         self.args.clear();
         self.cwd = ::core::option::Option::None;
-        self.timeout_ms = ::core::option::Option::None;
+        self.timeout = ::buffa::MessageField::none();
         self.__buffa_unknown_fields.clear();
     }
 }
@@ -3983,16 +3984,14 @@ pub struct CommandResult {
         skip_serializing_if = "::core::option::Option::is_none"
     )]
     pub truncated: ::core::option::Option<bool>,
-    /// Wall time spent waiting for the process, in milliseconds.
+    /// Wall time spent waiting for the process.
     ///
-    /// Field 6: `duration_ms`
+    /// Field 6: `duration`
     #[serde(
-        rename = "durationMs",
-        alias = "duration_ms",
-        with = "::buffa::json_helpers::opt_uint64",
-        skip_serializing_if = "::core::option::Option::is_none"
+        rename = "duration",
+        skip_serializing_if = "::buffa::json_helpers::skip_if::is_unset_message_field"
     )]
-    pub duration_ms: ::core::option::Option<u64>,
+    pub duration: ::buffa::MessageField<::buffa_types::google::protobuf::Duration>,
     /// Program basename that was executed.
     ///
     /// Field 7: `program`
@@ -4015,7 +4014,7 @@ impl ::core::fmt::Debug for CommandResult {
             .field("stderr", &self.stderr)
             .field("timed_out", &self.timed_out)
             .field("truncated", &self.truncated)
-            .field("duration_ms", &self.duration_ms)
+            .field("duration", &self.duration)
             .field("program", &self.program)
             .field("cwd", &self.cwd)
             .finish()
@@ -4072,13 +4071,6 @@ impl CommandResult {
     }
     #[must_use = "with_* setters return `self` by value; assign or chain the result"]
     #[inline]
-    ///Sets [`Self::duration_ms`] to `Some(value)`, consuming and returning `self`.
-    pub fn with_duration_ms(mut self, value: u64) -> Self {
-        self.duration_ms = Some(value);
-        self
-    }
-    #[must_use = "with_* setters return `self` by value; assign or chain the result"]
-    #[inline]
     ///Sets [`Self::program`] to `Some(value)`, consuming and returning `self`.
     pub fn with_program(
         mut self,
@@ -4109,7 +4101,7 @@ impl ::buffa::Message for CommandResult {
     /// messages to fit within 2 GiB (2,147,483,647 bytes), so a
     /// compliant message will never overflow this type.
     #[allow(clippy::let_and_return)]
-    fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+    fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
         #[allow(unused_imports)]
         use ::buffa::Enumeration as _;
         let mut size = 0u32;
@@ -4128,8 +4120,13 @@ impl ::buffa::Message for CommandResult {
         if self.truncated.is_some() {
             size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
         }
-        if let Some(v) = self.duration_ms {
-            size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+        if self.duration.is_set() {
+            let __slot = __cache.reserve();
+            let inner_size = self.duration.compute_size(__cache);
+            __cache.set(__slot, inner_size);
+            size
+                += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                    + inner_size;
         }
         if let Some(ref v) = self.program {
             size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
@@ -4142,7 +4139,7 @@ impl ::buffa::Message for CommandResult {
     }
     fn write_to(
         &self,
-        _cache: &mut ::buffa::SizeCache,
+        __cache: &mut ::buffa::SizeCache,
         buf: &mut impl ::buffa::bytes::BufMut,
     ) {
         #[allow(unused_imports)]
@@ -4162,8 +4159,9 @@ impl ::buffa::Message for CommandResult {
         if let Some(v) = self.truncated {
             ::buffa::types::put_bool_field(5u32, v, buf);
         }
-        if let Some(v) = self.duration_ms {
-            ::buffa::types::put_uint64_field(6u32, v, buf);
+        if self.duration.is_set() {
+            ::buffa::types::put_len_delimited_header(6u32, __cache.consume_next(), buf);
+            self.duration.write_to(__cache, buf);
         }
         if let Some(ref v) = self.program {
             ::buffa::types::put_string_field(7u32, v, buf);
@@ -4234,11 +4232,13 @@ impl ::buffa::Message for CommandResult {
             6u32 => {
                 ::buffa::encoding::check_wire_type(
                     tag,
-                    ::buffa::encoding::WireType::Varint,
+                    ::buffa::encoding::WireType::LengthDelimited,
                 )?;
-                self.duration_ms = ::core::option::Option::Some(
-                    ::buffa::types::decode_uint64(buf)?,
-                );
+                ::buffa::Message::merge_length_delimited(
+                    self.duration.get_or_insert_default(),
+                    buf,
+                    ctx,
+                )?;
             }
             7u32 => {
                 ::buffa::encoding::check_wire_type(
@@ -4273,7 +4273,7 @@ impl ::buffa::Message for CommandResult {
         self.stderr = ::core::option::Option::None;
         self.timed_out = ::core::option::Option::None;
         self.truncated = ::core::option::Option::None;
-        self.duration_ms = ::core::option::Option::None;
+        self.duration = ::buffa::MessageField::none();
         self.program = ::core::option::Option::None;
         self.cwd = ::core::option::Option::None;
         self.__buffa_unknown_fields.clear();
@@ -10243,14 +10243,18 @@ pub mod __buffa {
             ///
             /// Field 2: `allowed_programs`
             pub allowed_programs: ::buffa::RepeatedView<'a, &'a str>,
-            /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+            /// Default timeout when `RunCommand.timeout` is unset (must be \> 0).
             ///
-            /// Field 3: `default_timeout_ms`
-            pub default_timeout_ms: ::core::option::Option<u32>,
-            /// Hard cap for timeouts (must be \>= 1).
+            /// Field 3: `default_timeout`
+            pub default_timeout: ::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'a>,
+            >,
+            /// Hard cap for timeouts (must be \> 0).
             ///
-            /// Field 4: `max_timeout_ms`
-            pub max_timeout_ms: ::core::option::Option<u32>,
+            /// Field 4: `max_timeout`
+            pub max_timeout: ::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'a>,
+            >,
             /// Max captured stdout+stderr bytes combined (must be \>= 1).
             ///
             /// Field 5: `max_output_bytes`
@@ -10305,20 +10309,52 @@ pub mod __buffa {
                     3u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
-                            ::buffa::encoding::WireType::Varint,
+                            ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.default_timeout_ms = Some(
-                            ::buffa::types::decode_uint32(&mut cur)?,
-                        );
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.default_timeout.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.default_timeout = ::buffa::MessageFieldView::set(
+                                    <::buffa_types::google::protobuf::__buffa::view::DurationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     4u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
-                            ::buffa::encoding::WireType::Varint,
+                            ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.max_timeout_ms = Some(
-                            ::buffa::types::decode_uint32(&mut cur)?,
-                        );
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.max_timeout.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.max_timeout = ::buffa::MessageFieldView::set(
+                                    <::buffa_types::google::protobuf::__buffa::view::DurationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     5u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -10380,8 +10416,22 @@ pub mod __buffa {
                         .iter()
                         .map(|s| s.to_string())
                         .collect(),
-                    default_timeout_ms: self.default_timeout_ms,
-                    max_timeout_ms: self.max_timeout_ms,
+                    default_timeout: match self.default_timeout.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                ::buffa_types::google::protobuf::Duration,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
+                    max_timeout: match self.max_timeout.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                ::buffa_types::google::protobuf::Duration,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     max_output_bytes: self.max_output_bytes,
                     curl_url_prefixes: self
                         .curl_url_prefixes
@@ -10398,7 +10448,7 @@ pub mod __buffa {
         }
         impl<'a> ::buffa::ViewEncode<'a> for ShellToolConfigView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u32;
@@ -10408,11 +10458,21 @@ pub mod __buffa {
                 for v in &self.allowed_programs {
                     size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
                 }
-                if let Some(v) = self.default_timeout_ms {
-                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                if self.default_timeout.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.default_timeout.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                            + inner_size;
                 }
-                if let Some(v) = self.max_timeout_ms {
-                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                if self.max_timeout.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.max_timeout.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                            + inner_size;
                 }
                 if let Some(v) = self.max_output_bytes {
                     size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
@@ -10426,7 +10486,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::bytes::BufMut,
             ) {
                 #[allow(unused_imports)]
@@ -10437,11 +10497,21 @@ pub mod __buffa {
                 for v in &self.allowed_programs {
                     ::buffa::types::put_string_field(2u32, v, buf);
                 }
-                if let Some(v) = self.default_timeout_ms {
-                    ::buffa::types::put_uint32_field(3u32, v, buf);
+                if self.default_timeout.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        3u32,
+                        __cache.consume_next(),
+                        buf,
+                    );
+                    self.default_timeout.write_to(__cache, buf);
                 }
-                if let Some(v) = self.max_timeout_ms {
-                    ::buffa::types::put_uint32_field(4u32, v, buf);
+                if self.max_timeout.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        __cache.consume_next(),
+                        buf,
+                    );
+                    self.max_timeout.write_to(__cache, buf);
                 }
                 if let Some(v) = self.max_output_bytes {
                     ::buffa::types::put_uint64_field(5u32, v, buf);
@@ -10476,19 +10546,21 @@ pub mod __buffa {
                 if !self.allowed_programs.is_empty() {
                     __map.serialize_entry("allowedPrograms", &*self.allowed_programs)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.default_timeout_ms {
-                    __map
-                        .serialize_entry(
-                            "defaultTimeoutMs",
-                            &::buffa::json_helpers::ProtoJson(&__v),
-                        )?;
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .default_timeout
+                        .as_option()
+                    {
+                        __map.serialize_entry("defaultTimeout", __v)?;
+                    }
                 }
-                if let ::core::option::Option::Some(__v) = self.max_timeout_ms {
-                    __map
-                        .serialize_entry(
-                            "maxTimeoutMs",
-                            &::buffa::json_helpers::ProtoJson(&__v),
-                        )?;
+                {
+                    if let ::core::option::Option::Some(__v) = self
+                        .max_timeout
+                        .as_option()
+                    {
+                        __map.serialize_entry("maxTimeout", __v)?;
+                    }
                 }
                 if let ::core::option::Option::Some(__v) = self.max_output_bytes {
                     __map
@@ -10611,19 +10683,27 @@ pub mod __buffa {
             pub fn allowed_programs(&self) -> &::buffa::RepeatedView<'_, &'_ str> {
                 &self.0.reborrow().allowed_programs
             }
-            /// Default timeout when `RunCommand.timeout_ms` is unset (must be \>= 1).
+            /// Default timeout when `RunCommand.timeout` is unset (must be \> 0).
             ///
-            /// Field 3: `default_timeout_ms`
+            /// Field 3: `default_timeout`
             #[must_use]
-            pub fn default_timeout_ms(&self) -> ::core::option::Option<u32> {
-                self.0.reborrow().default_timeout_ms
+            pub fn default_timeout(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'_>,
+            > {
+                &self.0.reborrow().default_timeout
             }
-            /// Hard cap for timeouts (must be \>= 1).
+            /// Hard cap for timeouts (must be \> 0).
             ///
-            /// Field 4: `max_timeout_ms`
+            /// Field 4: `max_timeout`
             #[must_use]
-            pub fn max_timeout_ms(&self) -> ::core::option::Option<u32> {
-                self.0.reborrow().max_timeout_ms
+            pub fn max_timeout(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'_>,
+            > {
+                &self.0.reborrow().max_timeout
             }
             /// Max captured stdout+stderr bytes combined (must be \>= 1).
             ///
@@ -10686,10 +10766,12 @@ pub mod __buffa {
             ///
             /// Field 3: `cwd`
             pub cwd: ::core::option::Option<&'a str>,
-            /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+            /// Optional timeout (capped by ShellToolConfig.max_timeout). Proto JSON: `"30s"`.
             ///
-            /// Field 4: `timeout_ms`
-            pub timeout_ms: ::core::option::Option<u32>,
+            /// Field 4: `timeout`
+            pub timeout: ::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'a>,
+            >,
             pub __buffa_unknown_fields: ::buffa::UnknownFieldsView<'a>,
         }
         impl<'a> ::buffa::MessageView<'a> for RunCommandView<'a> {
@@ -10740,9 +10822,27 @@ pub mod __buffa {
                     4u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
-                            ::buffa::encoding::WireType::Varint,
+                            ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.timeout_ms = Some(::buffa::types::decode_uint32(&mut cur)?);
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.timeout.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.timeout = ::buffa::MessageFieldView::set(
+                                    <::buffa_types::google::protobuf::__buffa::view::DurationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     2u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -10777,7 +10877,14 @@ pub mod __buffa {
                     program: self.program.map(|s| s.to_string()),
                     args: self.args.iter().map(|s| s.to_string()).collect(),
                     cwd: self.cwd.map(|s| s.to_string()),
-                    timeout_ms: self.timeout_ms,
+                    timeout: match self.timeout.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                ::buffa_types::google::protobuf::Duration,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     __buffa_unknown_fields: self
                         .__buffa_unknown_fields
                         .to_owned()?
@@ -10788,7 +10895,7 @@ pub mod __buffa {
         }
         impl<'a> ::buffa::ViewEncode<'a> for RunCommandView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u32;
@@ -10801,8 +10908,13 @@ pub mod __buffa {
                 if let Some(ref v) = self.cwd {
                     size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
                 }
-                if let Some(v) = self.timeout_ms {
-                    size += 1u32 + ::buffa::types::uint32_encoded_len(v) as u32;
+                if self.timeout.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.timeout.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                            + inner_size;
                 }
                 size += self.__buffa_unknown_fields.encoded_len() as u32;
                 size
@@ -10810,7 +10922,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::bytes::BufMut,
             ) {
                 #[allow(unused_imports)]
@@ -10824,8 +10936,13 @@ pub mod __buffa {
                 if let Some(ref v) = self.cwd {
                     ::buffa::types::put_string_field(3u32, v, buf);
                 }
-                if let Some(v) = self.timeout_ms {
-                    ::buffa::types::put_uint32_field(4u32, v, buf);
+                if self.timeout.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        4u32,
+                        __cache.consume_next(),
+                        buf,
+                    );
+                    self.timeout.write_to(__cache, buf);
                 }
                 self.__buffa_unknown_fields.write_to(buf);
             }
@@ -10857,12 +10974,10 @@ pub mod __buffa {
                 if let ::core::option::Option::Some(__v) = self.cwd {
                     __map.serialize_entry("cwd", __v)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.timeout_ms {
-                    __map
-                        .serialize_entry(
-                            "timeoutMs",
-                            &::buffa::json_helpers::ProtoJson(&__v),
-                        )?;
+                {
+                    if let ::core::option::Option::Some(__v) = self.timeout.as_option() {
+                        __map.serialize_entry("timeout", __v)?;
+                    }
                 }
                 __map.end()
             }
@@ -10976,12 +11091,16 @@ pub mod __buffa {
             pub fn cwd(&self) -> ::core::option::Option<&'_ str> {
                 self.0.reborrow().cwd
             }
-            /// Optional timeout in milliseconds (capped by ShellToolConfig.max_timeout_ms).
+            /// Optional timeout (capped by ShellToolConfig.max_timeout). Proto JSON: `"30s"`.
             ///
-            /// Field 4: `timeout_ms`
+            /// Field 4: `timeout`
             #[must_use]
-            pub fn timeout_ms(&self) -> ::core::option::Option<u32> {
-                self.0.reborrow().timeout_ms
+            pub fn timeout(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'_>,
+            > {
+                &self.0.reborrow().timeout
             }
         }
         impl ::core::convert::From<::buffa::OwnedView<RunCommandView<'static>>>
@@ -11037,10 +11156,12 @@ pub mod __buffa {
             ///
             /// Field 5: `truncated`
             pub truncated: ::core::option::Option<bool>,
-            /// Wall time spent waiting for the process, in milliseconds.
+            /// Wall time spent waiting for the process.
             ///
-            /// Field 6: `duration_ms`
-            pub duration_ms: ::core::option::Option<u64>,
+            /// Field 6: `duration`
+            pub duration: ::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'a>,
+            >,
             /// Program basename that was executed.
             ///
             /// Field 7: `program`
@@ -11120,11 +11241,27 @@ pub mod __buffa {
                     6u32 => {
                         ::buffa::encoding::check_wire_type(
                             tag,
-                            ::buffa::encoding::WireType::Varint,
+                            ::buffa::encoding::WireType::LengthDelimited,
                         )?;
-                        view.duration_ms = Some(
-                            ::buffa::types::decode_uint64(&mut cur)?,
-                        );
+                        let __sub_ctx = ctx.descend()?;
+                        let sub = ::buffa::types::borrow_bytes(&mut cur)?;
+                        match view.duration.as_mut() {
+                            Some(existing) => {
+                                ::buffa::MessageView::merge_into_view(
+                                    existing,
+                                    sub,
+                                    __sub_ctx,
+                                )?
+                            }
+                            None => {
+                                view.duration = ::buffa::MessageFieldView::set(
+                                    <::buffa_types::google::protobuf::__buffa::view::DurationView as ::buffa::MessageView>::decode_view_ctx(
+                                        sub,
+                                        __sub_ctx,
+                                    )?,
+                                );
+                            }
+                        }
                     }
                     7u32 => {
                         ::buffa::encoding::check_wire_type(
@@ -11174,7 +11311,14 @@ pub mod __buffa {
                     stderr: self.stderr.map(|s| s.to_string()),
                     timed_out: self.timed_out,
                     truncated: self.truncated,
-                    duration_ms: self.duration_ms,
+                    duration: match self.duration.as_option() {
+                        Some(v) => {
+                            ::buffa::MessageField::<
+                                ::buffa_types::google::protobuf::Duration,
+                            >::some(v.to_owned_from_source(__buffa_src)?)
+                        }
+                        None => ::buffa::MessageField::none(),
+                    },
                     program: self.program.map(|s| s.to_string()),
                     cwd: self.cwd.map(|s| s.to_string()),
                     __buffa_unknown_fields: self
@@ -11187,7 +11331,7 @@ pub mod __buffa {
         }
         impl<'a> ::buffa::ViewEncode<'a> for CommandResultView<'a> {
             #[allow(clippy::needless_borrow, clippy::let_and_return)]
-            fn compute_size(&self, _cache: &mut ::buffa::SizeCache) -> u32 {
+            fn compute_size(&self, __cache: &mut ::buffa::SizeCache) -> u32 {
                 #[allow(unused_imports)]
                 use ::buffa::Enumeration as _;
                 let mut size = 0u32;
@@ -11206,8 +11350,13 @@ pub mod __buffa {
                 if self.truncated.is_some() {
                     size += 1u32 + ::buffa::types::BOOL_ENCODED_LEN as u32;
                 }
-                if let Some(v) = self.duration_ms {
-                    size += 1u32 + ::buffa::types::uint64_encoded_len(v) as u32;
+                if self.duration.is_set() {
+                    let __slot = __cache.reserve();
+                    let inner_size = self.duration.compute_size(__cache);
+                    __cache.set(__slot, inner_size);
+                    size
+                        += 1u32 + ::buffa::encoding::varint_len(inner_size as u64) as u32
+                            + inner_size;
                 }
                 if let Some(ref v) = self.program {
                     size += 1u32 + ::buffa::types::string_encoded_len(v) as u32;
@@ -11221,7 +11370,7 @@ pub mod __buffa {
             #[allow(clippy::needless_borrow)]
             fn write_to(
                 &self,
-                _cache: &mut ::buffa::SizeCache,
+                __cache: &mut ::buffa::SizeCache,
                 buf: &mut impl ::buffa::bytes::BufMut,
             ) {
                 #[allow(unused_imports)]
@@ -11241,8 +11390,13 @@ pub mod __buffa {
                 if let Some(v) = self.truncated {
                     ::buffa::types::put_bool_field(5u32, v, buf);
                 }
-                if let Some(v) = self.duration_ms {
-                    ::buffa::types::put_uint64_field(6u32, v, buf);
+                if self.duration.is_set() {
+                    ::buffa::types::put_len_delimited_header(
+                        6u32,
+                        __cache.consume_next(),
+                        buf,
+                    );
+                    self.duration.write_to(__cache, buf);
                 }
                 if let Some(ref v) = self.program {
                     ::buffa::types::put_string_field(7u32, v, buf);
@@ -11290,12 +11444,11 @@ pub mod __buffa {
                 if let ::core::option::Option::Some(__v) = self.truncated {
                     __map.serialize_entry("truncated", &__v)?;
                 }
-                if let ::core::option::Option::Some(__v) = self.duration_ms {
-                    __map
-                        .serialize_entry(
-                            "durationMs",
-                            &::buffa::json_helpers::ProtoJson(&__v),
-                        )?;
+                {
+                    if let ::core::option::Option::Some(__v) = self.duration.as_option()
+                    {
+                        __map.serialize_entry("duration", __v)?;
+                    }
                 }
                 if let ::core::option::Option::Some(__v) = self.program {
                     __map.serialize_entry("program", __v)?;
@@ -11434,12 +11587,16 @@ pub mod __buffa {
             pub fn truncated(&self) -> ::core::option::Option<bool> {
                 self.0.reborrow().truncated
             }
-            /// Wall time spent waiting for the process, in milliseconds.
+            /// Wall time spent waiting for the process.
             ///
-            /// Field 6: `duration_ms`
+            /// Field 6: `duration`
             #[must_use]
-            pub fn duration_ms(&self) -> ::core::option::Option<u64> {
-                self.0.reborrow().duration_ms
+            pub fn duration(
+                &self,
+            ) -> &::buffa::MessageFieldView<
+                ::buffa_types::google::protobuf::__buffa::view::DurationView<'_>,
+            > {
+                &self.0.reborrow().duration
             }
             /// Program basename that was executed.
             ///

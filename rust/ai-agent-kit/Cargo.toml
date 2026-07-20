@@ -12,6 +12,7 @@ name = "ai_agent_kit"
 
 [dependencies]
 api = { workspace = true }
+buffa-types = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -22,6 +22,11 @@ buffa = { version = "=0.8.1", default-features = false, features = [
     "fast-utf8",
     "json",
 ] }
+# Keep in lockstep with workspace `buffa` (WKT Duration/Timestamp for codegen).
+buffa-types = { version = "=0.8.1", default-features = false, features = [
+    "std",
+    "json",
+] }
 clap = { version = "4.5.60", features = ["derive", "env"] }
 reqwest = { version = "0.13.4", default-features = false, features = [
     "json",

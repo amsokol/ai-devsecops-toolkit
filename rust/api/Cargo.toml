@@ -11,4 +11,5 @@ path = "src/lib.rs"
 
 [dependencies]
 buffa = { workspace = true }
+buffa-types = { workspace = true }
 serde = { workspace = true }
