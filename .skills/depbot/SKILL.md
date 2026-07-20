@@ -31,11 +31,13 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
    - Cargo / Go / npm — see `go-modules.md`, `npm.md`
    - Bazel bzlmod — **must** use BCR (`bazel.md`), not “no scanner”
    - Buf modules / remote plugins — **must** use BSR checks (`bsr.md`), especially when comments mention BSR alignment
-4. **Reconcile** scan results with comments: bump only when unlocked; report blocked deps with quoted reasons.
-5. **Plan** groups using `grouping.md`. Prefer small PRs over one mega-bump.
+4. **Reconcile** scan results with comments and **coupled bundles** (`coupled-deps.md`):
+   unlock/bump/hold is per **bundle** when pins are linked; never partially unlock because one registry (e.g. GitHub) succeeded while another (e.g. BSR tag) did not.
+5. **Plan** groups using `grouping.md`. Prefer small PRs over one mega-bump; default **one PR per unlocked bundle** when it spans ecosystems or codegen.
 6. **Research** high-risk / major updates: release notes, breaking changes, usages in-repo (`rg` / `read_file`).
 7. **Apply** version bumps; refresh lockfiles (`go mod tidy`, `npm install`, `MODULE.bazel.lock`, `buf.lock`, …).
-   After an unlock bump, refresh or remove stale `depbot:` comments on that line.
+   Apply **all members** of a bundle in the same change-set; run regen when required.
+   After an unlock bump, refresh or remove stale `depbot:` comments on every member line.
 8. **Verify** with the lightest meaningful checks (build/test for the touched ecosystem).
 9. **Ship** only if the user asked for a PR: branch → commit → `gh pr create` (see `pr-style.md`).
 10. If the user asked for a **plan / dry-run**, stop after the plan — do not mutate or open a PR.
@@ -45,6 +47,7 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
 - Never invent absolute paths; stay relative to the workspace.
 - Never bypass allowlists or ask the user to disable guardrails for destructive git.
 - Do not bump a package that has an unmet hold/unlock comment unless the user explicitly overrides it.
+- Do not bump **part** of a coupled bundle (`coupled-deps.md`); all members move together or none do.
 - Do not bump majors of critical frameworks without an explicit user OK (see grouping).
 - Do not commit secrets, credentials, or generated junk unrelated to the bump.
 - Prefer one logical change-set per PR; do not mix refactors with dependency bumps.
@@ -58,9 +61,10 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
 
 - Start with a short plan when the request is broad.
 - Always include a **Dependency comments** section when any holds/unlocks were found.
+- Include **Coupled bundles** when any `depbot: bundle` or lockstep pins exist (`coupled-deps.md`).
 - For Bazel, include a **bzlmod vs BCR** table when `MODULE.bazel` is in scope.
 - For Buf, include a **BSR** table when `buf.yaml` / `buf.gen.*.yaml` / coupled crates are in scope.
 - After tools run, summarize what changed and what was verified.
 - Keep the final answer concise; put detail in the PR body when opening one.
 
-Read `dep-comments.md`, `grouping.md`, `go-modules.md`, `npm.md`, `bazel.md`, `bsr.md`, and `pr-style.md` for detailed policy.
+Read `dep-comments.md`, `coupled-deps.md`, `grouping.md`, `go-modules.md`, `npm.md`, `bazel.md`, `bsr.md`, and `pr-style.md` for detailed policy.

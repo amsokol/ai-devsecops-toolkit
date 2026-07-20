@@ -22,8 +22,11 @@ Before proposing or applying bumps, search and read comments in:
 Teams should leave machine-friendly notes next to pins:
 
 ```toml
-# depbot: hold =0.8.1 — bump to =0.9.0 when buffa 0.9 is released with matching
-# BSR plugin and workspace features (std, fast-utf8, json) still work.
+# depbot: bundle buffa-codegen
+# depbot: hold =0.8.1 — bump bundle to 0.9.x when ALL unlock (coupled-deps.md):
+#   - crates.io: buffa, buffa-types @ 0.9.0
+#   - GitHub: anthropics/buffa release v0.9.0
+#   - BSR remote: buf.build/anthropics/buffa:v0.9.0 (tag must exist; GitHub alone is NOT enough)
 buffa = { version = "=0.8.1", default-features = false, features = ["std", "fast-utf8", "json"] }
 ```
 
@@ -41,7 +44,9 @@ Marker grammar (informal, parse with judgment):
 | Phrase | Meaning |
 |--------|---------|
 | `hold` / `pin` / `do not bump` | Block automatic bumps unless condition met or user overrides |
+| `bundle <id>` | Member of a coupled set — see `coupled-deps.md`; hold/unlock applies to the **whole bundle** |
 | `bump to X when …` / `until …` | Allowed target + unlock condition |
+| `bump bundle to X when ALL …` | Every listed condition must pass before **any** bundle member bumps |
 | `ok to patch` / `patch only` | Cap at patch (or patch+minor if said) |
 | `security ok` / `security exception` | Security bumps may bypass a soft hold (still report) |
 
@@ -55,10 +60,10 @@ the next run is unambiguous.
 2. **Comment pass** — collect holds / unlock conditions / intended targets per package.
 3. **Scan** outdated versions with ecosystem tools.
 4. **Reconcile**:
+   - Identify **coupled bundles** (`coupled-deps.md`); unlock and bump decisions are **per bundle**, never per isolated line when members share a `depbot: bundle` id or lockstep comment.
    - If outdated **and** unlock condition is satisfied → candidate to bump (to the
      commented target when specified, else latest allowed by grouping policy).
-   - If outdated **but** hold/condition unmet → **do not bump**; list it under
-     “blocked by comment” with the quote and what’s still missing.
+   - If outdated **but** hold/condition unmet for **any bundle member** → **do not bump any member**; list under “blocked by comment” with the quote and what’s still missing.
    - If a comment names a future version that is **not yet published** → report
      “waiting on upstream”, do not invent a bump.
    - If a comment conflicts with the user request (“bump everything”) → ask or
@@ -72,8 +77,10 @@ Always surface comment-driven decisions in plans and PR bodies:
 
 ```markdown
 ## Dependency comments
-- `buffa` held at `=0.8.1` — unlock: bump to `=0.9.0` when 0.9 is available with matching features
-  (condition unmet / met — …)
+- `buffa-codegen` bundle held at `0.8.1` — unlock: ALL conditions in comment (see Coupled bundles)
+
+## Coupled bundles
+- `buffa-codegen`: blocked — crates.io ✓, GitHub ✓, BSR plugin tag v0.9.0 not confirmed
 ```
 
 If you only do a dry-run, the comment analysis section is still required.
@@ -83,4 +90,4 @@ If you only do a dry-run, the comment analysis section is still required.
 - Ignoring comments because `cargo update` / `npm outdated` looks clean or noisy
 - Bumping past an explicit hold “to help”
 - Leaving obsolete `depbot: hold … bump to 0.9.0` comments after 0.9.0 is already applied
-- Treating unrelated code TODOs as dependency policy
+- Bumping one member of a coupled bundle while leaving siblings on the old pin

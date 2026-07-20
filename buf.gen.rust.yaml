@@ -1,8 +1,7 @@
 version: v2
 plugins:
-  # Message types (BSR). Pin matches workspace buffa =0.8.1.
-  # depbot: keep in lockstep with Cargo.toml buffa — bump remote to v0.9.0 only when
-  # the crates.io/GitHub buffa v0.9.0 release and this BSR plugin tag are both available.
+  # depbot: bundle buffa-codegen — member: BSR remote plugin (version family = workspace buffa)
+  # depbot: hold v0.8.1 — unlock with bundle buffa-codegen (all conditions in Cargo.toml / coupled-deps.md)
   - remote: buf.build/anthropics/buffa:v0.8.1
     out: rust/api/gen/buffa
     opt:

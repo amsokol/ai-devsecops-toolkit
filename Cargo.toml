@@ -15,14 +15,17 @@ publish = false
 
 [workspace.dependencies]
 api = { path = "rust/api" }
-# depbot: hold =0.8.1 — bump to =0.9.0 when buffa 0.9 is released and the BSR
-# anthropics/buffa plugin / codegen in this repo are aligned (features: std, fast-utf8, json).
+# depbot: bundle buffa-codegen
+# depbot: hold =0.8.1 — bump bundle to 0.9.x when ALL unlock (coupled-deps.md):
+#   - crates.io: buffa, buffa-types @ 0.9.0
+#   - GitHub: anthropics/buffa release v0.9.0
+#   - BSR remote: buf.build/anthropics/buffa:v0.9.0 (tag must exist; GitHub alone is NOT enough)
 buffa = { version = "=0.8.1", default-features = false, features = [
     "std",
     "fast-utf8",
     "json",
 ] }
-# Keep in lockstep with workspace `buffa` (WKT Duration/Timestamp for codegen).
+# depbot: bundle buffa-codegen — member: buffa-types (same version family as buffa)
 buffa-types = { version = "=0.8.1", default-features = false, features = [
     "std",
     "json",

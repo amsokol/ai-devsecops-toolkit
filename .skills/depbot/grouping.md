@@ -33,6 +33,13 @@ How to split dependency updates into reviewable units.
 - Prefer updating shared libraries / workspace packages before leaf apps when versions must stay aligned.
 - Say which package path you changed (`go.mod` module path, `packages/…`, workspace root).
 
+## Coupled bundles vs PR groups
+
+- **Bundle** (`coupled-deps.md`): atomic version train — scan/unlock/apply together.
+- **PR group** (this file): how many bumps share one review story.
+
+A single unlocked bundle that spans Cargo + Buf + Bazel codegen is usually **one PR**, even if grouping would otherwise split ecosystems.
+
 ## When the list is huge
 
 1. Propose a prioritized batch (security → patch → minor → selected majors).

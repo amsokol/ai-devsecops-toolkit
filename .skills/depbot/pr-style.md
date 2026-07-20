@@ -45,6 +45,9 @@ Use this structure (adapt sections as needed):
 ## Dependency comments
 - Quote relevant `depbot:` / human holds; note which unlocks were satisfied or still blocking.
 
+## Coupled bundles
+- Table per `coupled-deps.md`: bundle id, all members, unlock status, single action (bump bundle / blocked).
+
 ## Changes
 - List packages: `name` `old -> new` (group if long).
 
