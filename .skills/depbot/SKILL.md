@@ -26,6 +26,7 @@ Hard guardrails in the runtime block dangerous `git` (force-push, `reset --hard`
    Open listed evidence files only when you need their contents; dig into nested trees only if relevant.
 2. **Comment pass** — find and interpret dependency-related comments (`dep-comments.md`).
    Treat `depbot:` markers and nearby human notes as policy (holds, unlock conditions, target versions).
+   Search includes `bundle` / lockstep language and Buf manifests (`buf.yaml`, `buf.gen.*.yaml`).
    This is mandatory and is what Renovate does not do well.
 3. **Scan** outdated deps with the native / registry method for that ecosystem:
    - Cargo / Go / npm — see `go-modules.md`, `npm.md`

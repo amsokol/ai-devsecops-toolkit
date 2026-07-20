@@ -11,11 +11,13 @@ This is a core product differentiator. Never skip the comment pass.
 Before proposing or applying bumps, search and read comments in:
 
 - Manifest lines and the few lines above/below each dependency
-  (`Cargo.toml`, `go.mod`, `package.json`, `MODULE.bazel`, lock-adjacent notes)
+  (`Cargo.toml`, `go.mod`, `package.json`, `MODULE.bazel`, `buf.yaml`,
+  `buf.gen.*.yaml`, `buf.lock`, lock-adjacent notes)
 - Nearby `#` / `//` / `/* */` comments and TOML/JSON is awkward — for JSON, check
   sibling `*.md` / `DEPENDENCIES.md` / `docs/deps*` if present
-- `rg` for: `depbot:`, `pin`, `hold`, `do not bump`, `until`, `when`, `blocked`,
-  `FIXME.*dep`, `TODO.*bump`, package names about to be updated
+- `rg` for: `depbot:`, `bundle`, `pin`, `hold`, `do not bump`, `until`, `when`,
+  `blocked`, `lockstep`, `aligned`, `move together`, `FIXME.*dep`, `TODO.*bump`,
+  package names about to be updated
 
 ## Preferred convention (`depbot:` markers)
 
@@ -41,14 +43,14 @@ require github.com/example/lib v1.2.3
 
 Marker grammar (informal, parse with judgment):
 
-| Phrase | Meaning |
-|--------|---------|
-| `hold` / `pin` / `do not bump` | Block automatic bumps unless condition met or user overrides |
-| `bundle <id>` | Member of a coupled set — see `coupled-deps.md`; hold/unlock applies to the **whole bundle** |
-| `bump to X when …` / `until …` | Allowed target + unlock condition |
-| `bump bundle to X when ALL …` | Every listed condition must pass before **any** bundle member bumps |
-| `ok to patch` / `patch only` | Cap at patch (or patch+minor if said) |
-| `security ok` / `security exception` | Security bumps may bypass a soft hold (still report) |
+| Phrase                               | Meaning                                                                                      |
+| ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `hold` / `pin` / `do not bump`       | Block automatic bumps unless condition met or user overrides                                 |
+| `bundle <id>`                        | Member of a coupled set — see `coupled-deps.md`; hold/unlock applies to the **whole bundle** |
+| `bump to X when …` / `until …`       | Allowed target + unlock condition                                                            |
+| `bump bundle to X when ALL …`        | Every listed condition must pass before **any** bundle member bumps                          |
+| `ok to patch` / `patch only`         | Cap at patch (or patch+minor if said)                                                        |
+| `security ok` / `security exception` | Security bumps may bypass a soft hold (still report)                                         |
 
 Natural-language comments **without** the `depbot:` prefix still count if they clearly
 refer to that dependency. Prefer adding a `depbot:` marker when you touch the line so
@@ -57,7 +59,8 @@ the next run is unambiguous.
 ## Workflow integration
 
 1. **Discover** manifests.
-2. **Comment pass** — collect holds / unlock conditions / intended targets per package.
+2. **Comment pass** — collect holds / unlock conditions / intended targets, and discover
+   **coupled bundles** (`rg 'depbot: bundle'|lockstep|aligned`; see `coupled-deps.md`).
 3. **Scan** outdated versions with ecosystem tools.
 4. **Reconcile**:
    - Identify **coupled bundles** (`coupled-deps.md`); unlock and bump decisions are **per bundle**, never per isolated line when members share a `depbot: bundle` id or lockstep comment.

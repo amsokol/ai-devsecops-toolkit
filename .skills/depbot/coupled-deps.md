@@ -59,6 +59,8 @@ infer the bundle from context, then **name it** in the plan table.
    - Partial evidence (e.g. crates.io + GitHub but **no** BSR plugin tag) → **blocked**,
      report what is still missing. Do **not** treat one registry as a substitute for another
      unless the comment explicitly allows it.
+   - Uncertain evidence counts as unmet (e.g. BSR HTML page does not clearly show the
+     target tag) → **blocked**; never guess that a remote exists.
 5. **Plan / PR**: one row per bundle in **Coupled bundles**; action is bump / hold / blocked
    for the **set**, not split verdicts like “crate unlocked, plugin blocked” that imply a partial bump.
 6. **Apply**: in one change-set (usually one commit / one PR section):
@@ -71,6 +73,7 @@ infer the bundle from context, then **name it** in the plan table.
 ## Anti-patterns
 
 - “crates.io has 0.9.0 → unlock buffa” while BSR plugin `v0.9.0` is unconfirmed.
+- Assuming a BSR remote tag exists because GitHub/crates.io shipped the same version.
 - Bumping `Cargo.toml` but leaving `buf.gen.*.yaml` on the old plugin tag.
 - Reporting one member as **candidate bump** and another as **hold** within the same bundle.
 - Splitting a bundle across PRs unless the user explicitly asked to stage (and you document risk).

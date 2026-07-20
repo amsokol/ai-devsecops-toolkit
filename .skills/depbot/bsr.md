@@ -48,8 +48,13 @@ program: curl
 args: ["-fsSL", "https://buf.build/anthropics/buffa"]
 ```
 
-Or inspect the module/plugin page in the browser and note the published version labels.
-If the target tag (e.g. `v0.9.0`) is not listed → bundle **blocked**; cite what you checked.
+Or inspect the module/plugin page and note the published version labels.
+
+**Ambiguity rule (mandatory):** HTML/UI pages are imperfect scanners. Unlock only when
+the target tag (e.g. `v0.9.0`) is **unambiguously** present in the evidence you cite.
+If the page is empty, truncated, JS-rendered without the tag text, or you cannot quote
+where the tag appears → treat as **not confirmed** → bundle **blocked**. Do **not**
+infer the BSR tag from GitHub/crates.io. Cite what you checked and what was missing.
 
 ### Fallback 2 — GitHub releases (supporting evidence)
 
