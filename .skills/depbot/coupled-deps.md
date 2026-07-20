@@ -59,8 +59,9 @@ infer the bundle from context, then **name it** in the plan table.
    - Partial evidence (e.g. crates.io + GitHub but **no** BSR plugin tag) → **blocked**,
      report what is still missing. Do **not** treat one registry as a substitute for another
      unless the comment explicitly allows it.
-   - Uncertain evidence counts as unmet (e.g. BSR HTML page does not clearly show the
-     target tag) → **blocked**; never guess that a remote exists.
+   - Uncertain evidence counts as unmet (e.g. BSR HTML SPA, or `buf registry plugin`
+     rejected the protoc plugin) → **blocked**; never guess that a remote exists.
+     Prefer the `buf generate` resolve probe in `bsr.md` for protoc remotes.
 5. **Plan / PR**: one row per bundle in **Coupled bundles**; action is bump / hold / blocked
    for the **set**, not split verdicts like “crate unlocked, plugin blocked” that imply a partial bump.
 6. **Apply**: in one change-set (usually one commit / one PR section):

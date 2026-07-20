@@ -4,6 +4,9 @@
 # Bazel
 /.bazel/
 
+# depbot / agent throwaway probes (BSR resolve, etc.)
+.tmp/
+
 # IDE / OS
 .DS_Store
 .idea/
